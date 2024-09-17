@@ -54,7 +54,7 @@ def main_scrapper(chrome_options,  url):
                         WebDriverWait(driver, 10).until(
                             EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
                         )                
-                                
+
                         tabel_dashboard = driver.find_element(By.ID, 'tablePerkaraAll')
                         row = tabel_dashboard.find_elements(By.TAG_NAME, 'tr')[i]
 
@@ -72,38 +72,81 @@ def main_scrapper(chrome_options,  url):
                         lama_proses_content = lama_proses.text.strip()
 
                         if status_perkara_content == "Minutasi":
+                            dakwaan_found = False
                             jumlah_data += 1
                             print(f"{jumlah_data} - {nomor_perkara_content} - {tanggal_register_content} - {klasifikasi_perkara_content} - {status_perkara_content}")
-
+                            
+                            # Page Data Umum
                             link_detail_perkara = detail_perkara.find_element(By.TAG_NAME, 'a')
                             link_detail_perkara.click()
 
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
                             
-                            menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
-                            menu_detail_penetapan.click()
+                            tabel_data_umum = menu_detail.find_element(By.XPATH, ".//following::table[1]")
+                            rows_data_umum = tabel_data_umum.find_elements(By.TAG_NAME, "tr")
 
-                            menu_detail = WebDriverWait(driver, 15).until(
-                                EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
+                            for row in rows_data_umum:
+                                contents = row.find_elements(By.TAG_NAME, "td")
+                                for content in contents:
+                                    if content.text == "Tanggal Pendaftaran":    
+                                        tanggal_pendaftaran_content = contents[1].text.strip()
+                                        print(tanggal_pendaftaran_content)
+                                    
+                                    elif content.text == "Klasifikasi Perkara":
+                                        klasifikasi_perkara_content = contents[1].text.strip()
+                                        print(klasifikasi_perkara_content)
 
-                            menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
-                            menu_detail_saksi.click()      
+                                    elif content.text == "Nomor Perkara":
+                                        nomor_perkara_content = contents[1].text.strip()
+                                        print(nomor_perkara_content)
 
-                            menu_detail = WebDriverWait(driver, 15).until(
-                                EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
+                                    # elif content.text == "Penuntut Umum":
+                                    # elif content.text == "Terdakwa":
+
+                                    elif not dakwaan_found and content.text == "Dakwaan":
+                                        tabel_dakwaan_field = row.find_element(By.XPATH, ".//following::table[1]")
+                                        rows_dakwaan = tabel_dakwaan_field.find_elements(By.TAG_NAME, "tr")
+                                        
+                                        for row_dakwaan in rows_dakwaan:
+                                            if not dakwaan_found:
+                                                contents = row_dakwaan.find_elements(By.TAG_NAME, "td")
+                                                dakwaan_content = contents[1].text
+                                                dakwaan_found = True
+                                                print(dakwaan_content)
+
+                            time.sleep(10)
+                            # # Page Penetapan
+                            # menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
+                            # menu_detail_penetapan.click()
+
+                            # menu_detail = WebDriverWait(driver, 15).until(
+                            #     EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
+                            
+
+                            
+                            # # Page Saksi
+                            # menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
+                            # menu_detail_saksi.click()      
+
+
+                            # menu_detail = WebDriverWait(driver, 15).until(
+                            #     EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
                                                             
-                            menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
-                            menu_detail_putusan.click()
+                            # # Page Putusan
+                            # menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
+                            # menu_detail_putusan.click()
 
-                            menu_detail = WebDriverWait(driver, 15).until(
-                                EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))                        
+                            # menu_detail = WebDriverWait(driver, 15).until(
+                            #     EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))                        
 
-                            menu_detail_barang_bukti = menu_detail.find_element(By.XPATH, ".//a[text()='Barang Bukti']")
-                            menu_detail_barang_bukti.click()
+                            # # Page Barang Bukti
+                            # menu_detail_barang_bukti = menu_detail.find_element(By.XPATH, ".//a[text()='Barang Bukti']")
+                            # menu_detail_barang_bukti.click()
 
-                            driver.back()
-                            driver.execute_script("window.scrollTo(0, 0);")
+                            # # Back to Dashboard
+                            # driver.back()
+                            # driver.execute_script("window.scrollTo(0, 0);")
                         else:
                             # print(f"{page}-{i}. Bukan Minutasi")
                             continue
