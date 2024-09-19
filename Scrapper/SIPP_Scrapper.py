@@ -74,8 +74,10 @@ def main_scrapper(chrome_options,  url):
                         if status_perkara_content == "Minutasi":
                             dakwaan_found = False
                             nama_penuntut_list = []
+                            putusan_hukuman_list = []
                             hakim_list = []
                             jumlah_data += 1
+                            print("\n----------------------------------------------------------------")
                             print(f"{jumlah_data} - {nomor_perkara_content} - {tanggal_register_content} - {klasifikasi_perkara_content} - {status_perkara_content}")
                             
                             # Page Data Umum
@@ -197,6 +199,47 @@ def main_scrapper(chrome_options,  url):
                             menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
                             menu_detail_putusan.click()
 
+                            menu_detail = WebDriverWait(driver, 15).until(
+                                EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
+                            
+                            tabel_putusan = menu_detail.find_element(By.ID, "tabs10")
+                            rows_putusan = tabel_putusan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
+                            # print(tabel_putusan.get_attribute("outerHTML"))
+                    
+                            try:
+                                for row_putusan in rows_putusan:
+                                    contents = row_putusan.find_elements(By.TAG_NAME, "td")
+
+                                    header_text = contents[0].text.strip()
+                                    content_text = contents[1]
+
+                                    # print(f"row_putusan {header_text}")
+
+                                    if header_text == "Status Putusan":
+                                        # print(content_text.get_attribute('outerHTML'))
+                                        tabel_status_putusan = content_text.find_element(By.XPATH, ".//following::table[1]") #find element opsional
+                                        rows_status_putusan = tabel_status_putusan.find_elements(By.CSS_SELECTOR,  "tr")
+
+                                        for index, row_status_putusan in enumerate(rows_status_putusan):
+                                            # print(row_status_putusan.get_attribute('outerHTML'))
+                                            if index == 0:
+                                                continue
+                                            
+                                            columns = row_status_putusan.find_elements(By.CSS_SELECTOR, "td")
+
+                                            nama_terdakwa = columns[1].text.strip()
+                                            putusan_hukuman = columns[3].text.strip()
+
+                                            hukuman_content = nama_terdakwa + "~" + putusan_hukuman
+
+                                            putusan_hukuman_list.append(hukuman_content)
+
+                                print(putusan_hukuman_list)       
+
+                            except Exception as e:
+                                print(f"error at tabel putusan {e}")
+
+         
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))                        
 
