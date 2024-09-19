@@ -73,6 +73,8 @@ def main_scrapper(chrome_options,  url):
 
                         if status_perkara_content == "Minutasi":
                             dakwaan_found = False
+                            nama_penuntut_list = []
+                            hakim_list = []
                             jumlah_data += 1
                             print(f"{jumlah_data} - {nomor_perkara_content} - {tanggal_register_content} - {klasifikasi_perkara_content} - {status_perkara_content}")
                             
@@ -90,28 +92,45 @@ def main_scrapper(chrome_options,  url):
                                 for row_data_umum in rows_data_umum:
                                     contents = row_data_umum.find_elements(By.TAG_NAME, "td")
 
-                                    header_text = contents[0].text.strip()  # Assuming header text is in the first cell
-                                    content_text = contents[1].text.strip()  # Assuming content is in the second cell
+                                    header_text = contents[0].text.strip()
+                                    content_text = contents[1]
 
                                     if header_text == "Tanggal Pendaftaran":    
-                                        tanggal_pendaftaran_content = content_text
+                                        tanggal_pendaftaran_content = content_text.text.strip()
                                         print(tanggal_pendaftaran_content)
                                     
                                     elif header_text == "Klasifikasi Perkara":
-                                        klasifikasi_perkara_content = content_text
+                                        klasifikasi_perkara_content = content_text.text.strip()
                                         print(klasifikasi_perkara_content)
 
                                     elif header_text == "Nomor Perkara":
-                                        nomor_perkara_content = content_text
+                                        nomor_perkara_content = content_text.text.strip()
                                         print(nomor_perkara_content)
 
                                     # elif header_text == "Penuntut Umum":
+                                    #     print(contents)
+                                    #     tabel_penuntut_umum = contents.find_elements(By.XPATH, ".//following::table[1]")
+                                    #     rows_penuntut_umum = tabel_penuntut_umum.find_elements(By.TAG_NAME, 'tr')
+                                    #     print("ROWS_PENUNTUT_UMUM")
+
+                                    #     for index, row_penuntut_umum in enumerate(rows_penuntut_umum):
+                                    #         if index == 0:
+                                    #             continue
+                                    #         print("ROW_PENUNTUT_UMUM")
+                                    #         contents_penuntut_umum = row_penuntut_umum.find_elements(By.TAG_NAME, 'td')
+                                    #         print("FINDING TD")
+                                    #         if len(contents_penuntut_umum) > 1:
+                                    #             nama_penuntut = contents_penuntut_umum[1].text.strip()
+                                    #             nama_penuntut_list.append(nama_penuntut) 
+
+                                    #     print(nama_penuntut_list)
+                                    
                                     # elif header_text == "Terdakwa":
 
                                     elif not dakwaan_found and header_text == "Dakwaan":
                                         if len(contents) > 1:
                                             dakwaan_content = contents[1].text.strip()
-                                            print(dakwaan_content)
+                                            # print(dakwaan_content)
                                             dakwaan_found = True
                             except:
                                 print("Tidak ada data umum yang ditemukan")
@@ -124,6 +143,48 @@ def main_scrapper(chrome_options,  url):
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
                             
+                            tabel_penetapan = menu_detail.find_element(By.ID, "tabs2")
+                            rows_penetapan = tabel_penetapan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
+                            # print("PASS ROWS_PENETAPAN")
+                            # print("Table HTML:")
+                            # print(tabel_penetapan.get_attribute('outerHTML'))
+
+                            for index_penetapan, row_penetapan in enumerate(rows_penetapan):
+                                # print(index_penetapan)
+                                if index_penetapan == 1:
+                                    try:
+                                        tabel_penetapan_hakim = row_penetapan.find_elements(By. TAG_NAME, 'td')
+                                        tabel_penetapan_hakim = tabel_penetapan_hakim[0]
+
+                                        content_tabel_penetapan_hakim = tabel_penetapan_hakim.find_element(By.XPATH, ".//following::table[1]")
+                                        rows_penetapan_hakim = content_tabel_penetapan_hakim.find_elements(By.CSS_SELECTOR, "tr")
+                                        # print(tabel_penetapan_hakim.get_attribute('outerHTML'))
+                                        # print(rows_penetapan_hakim.text)
+
+                                        for index_penetapan_hakim, row_penetapan_hakim in enumerate(rows_penetapan_hakim):
+                                            # print(f" INDEX PENETAPAN HAKIM : {index_penetapan_hakim}")
+                                            if index_penetapan_hakim == 0:
+                                                continue
+
+                                            try:
+                                                nama_hakim = row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[1]
+                                                posisi_hakim = row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[2]
+                                                # print(row_penetapan_hakim.text)
+
+                                                nama_hakim = nama_hakim.text.strip()
+                                                posisi_hakim = posisi_hakim.text.strip()
+
+                                                hakim_content = nama_hakim + '~' + posisi_hakim
+                                                hakim_list.append(hakim_content)
+                                                
+                                            except Exception as e:
+                                                print(f"error at tabel penetapan hakim {e}")
+
+                                    except Exception as e:
+                                        print(f"error at tabel penetapan {e}")
+
+                            print(hakim_list)
+
                             # Page Saksi
                             menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
                             menu_detail_saksi.click()      
@@ -152,7 +213,7 @@ def main_scrapper(chrome_options,  url):
 
                     except Exception as e:
                         print(f"Error in row {i} Page {page}: {e}")
-                        # driver.quit()
+                        driver.quit()
                         continue
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
