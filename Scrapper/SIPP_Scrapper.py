@@ -191,7 +191,6 @@ def main_scrapper(chrome_options,  url):
                             menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
                             menu_detail_saksi.click()      
 
-
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
                                                             
@@ -233,6 +232,12 @@ def main_scrapper(chrome_options,  url):
                                             hukuman_content = nama_terdakwa + "~" + putusan_hukuman
 
                                             putusan_hukuman_list.append(hukuman_content)
+                                    
+                                    #Amar Putusan untuk mengambil data barang bukti
+                                    if header_text == "Amar Putusan":
+                                        amar_putusan = content_text.text.strip()
+                                        print(amar_putusan)
+
 
                                 print(putusan_hukuman_list)       
 
