@@ -16,7 +16,7 @@ def suppress_error():
 
     return _chrome_options
 
-def main_scrapper(chrome_options,  url):
+def main_scrapper(chrome_options, url):
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
@@ -109,30 +109,31 @@ def main_scrapper(chrome_options,  url):
                                         nomor_perkara_content = content_text.text.strip()
                                         print(nomor_perkara_content)
 
-                                    # elif header_text == "Penuntut Umum":
-                                    #     print(contents)
-                                    #     tabel_penuntut_umum = contents.find_elements(By.XPATH, ".//following::table[1]")
-                                    #     rows_penuntut_umum = tabel_penuntut_umum.find_elements(By.TAG_NAME, 'tr')
-                                    #     print("ROWS_PENUNTUT_UMUM")
+                                    elif header_text == "Penuntut Umum":
+                                        
+                                        # print(content_text.get_attribute("outerHTML"))
+                                        rows_penuntut_umum = content_text.find_elements(By.TAG_NAME, 'tr')
+                                        # print("ROWS_PENUNTUT_UMUM")
 
-                                    #     for index, row_penuntut_umum in enumerate(rows_penuntut_umum):
-                                    #         if index == 0:
-                                    #             continue
-                                    #         print("ROW_PENUNTUT_UMUM")
-                                    #         contents_penuntut_umum = row_penuntut_umum.find_elements(By.TAG_NAME, 'td')
-                                    #         print("FINDING TD")
-                                    #         if len(contents_penuntut_umum) > 1:
-                                    #             nama_penuntut = contents_penuntut_umum[1].text.strip()
-                                    #             nama_penuntut_list.append(nama_penuntut) 
+                                        for index, row_penuntut_umum in enumerate(rows_penuntut_umum):
+                                            if index == 0:
+                                                continue
 
-                                    #     print(nama_penuntut_list)
+                                            # print("ROW_PENUNTUT_UMUM")
+                                            contents_penuntut_umum = row_penuntut_umum.find_elements(By.TAG_NAME, 'td')
+                                            # print("TD FOUND")
+
+                                            nama_penuntut = contents_penuntut_umum[1].text.strip()
+                                            nama_penuntut_list.append(nama_penuntut) 
+
+                                        print(nama_penuntut_list)
                                     
                                     # elif header_text == "Terdakwa":
 
                                     elif not dakwaan_found and header_text == "Dakwaan":
                                         if len(contents) > 1:
                                             dakwaan_content = contents[1].text.strip()
-                                            # print(dakwaan_content)
+                                            print(dakwaan_content)
                                             dakwaan_found = True
                             except:
                                 print("Tidak ada data umum yang ditemukan")
@@ -245,23 +246,18 @@ def main_scrapper(chrome_options,  url):
                                         amar_putusan = content_text.text.strip()
                                         print(amar_putusan)
 
-
                                 print(putusan_hukuman_list)       
 
                             except Exception as e:
                                 print(f"error at tabel putusan {e}")
-
          
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))                        
 
-                            # Page Barang Bukti
-                            menu_detail_barang_bukti = menu_detail.find_element(By.XPATH, ".//a[text()='Barang Bukti']")
-                            menu_detail_barang_bukti.click()
-
                             # Back to Dashboard
                             driver.back()
                             driver.execute_script("window.scrollTo(0, 0);")
+
                         else:
                             # print(f"{page}-{i}. Bukan Minutasi")
                             continue
@@ -272,7 +268,6 @@ def main_scrapper(chrome_options,  url):
                         continue
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
-
                 next_button.click()
 
                 time.sleep(2)
