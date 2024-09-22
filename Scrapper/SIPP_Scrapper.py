@@ -193,6 +193,13 @@ def main_scrapper(chrome_options,  url):
 
                             menu_detail = WebDriverWait(driver, 15).until(
                                 EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
+                            
+                            tabel_saksi = menu_detail.find_element(By.ID, 'tabs26')
+                            rows_tabel_saksi = tabel_saksi.find_elements(By.CSS_SELECTOR, 'tr')
+
+                            jumlah_saksi = len(rows_tabel_saksi) - 1
+
+                            print(jumlah_saksi)                            
                                                             
                             # Page Putusan
                             menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
