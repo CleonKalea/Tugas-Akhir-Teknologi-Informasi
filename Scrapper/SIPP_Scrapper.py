@@ -83,8 +83,6 @@ def scrap_data_umum(menu_detail:  WebElement) -> tuple[str, str, str, list[str],
                     _nama_terdakwa = _contents_terdakwa[1].text.strip()
                     _nama_terdakwa_list.append(_nama_terdakwa) 
 
-                print(_nama_terdakwa_list)
-
             elif not _dakwaan_found and _header_text == "Dakwaan":
                 if len(_contents) > 1:
                     _dakwaan_content = _contents[1].text.strip()
@@ -264,7 +262,7 @@ def main_scrapper(chrome_options, url, previous_data):
                         status_perkara_content = status_perkara.text.strip()
                         lama_proses_content = lama_proses.text.strip()
 
-                        if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara']:
+                        if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara'].astype(str).values:
                             jumlah_data += 1
                             
                             # print("\n----------------------------------------------------------------")
@@ -316,7 +314,7 @@ def main_scrapper(chrome_options, url, previous_data):
                             }
                             new_data_df = pd.DataFrame([new_data])
                             df = pd.concat([df, new_data_df], ignore_index=True)
-                            print(df)
+                            print(df.iloc[-1])
 
                             # Back to Dashboard                   
                             driver.back()
@@ -342,6 +340,8 @@ def main_scrapper(chrome_options, url, previous_data):
 
             except Exception as e:
                 print("Error:", e)
+                df.to_csv(f'Data/{SIPP}.csv', index=False)
+                print("Data Saved!")
             
     except Exception as e:
         print("Error:", e)
@@ -349,6 +349,7 @@ def main_scrapper(chrome_options, url, previous_data):
         print("Data Saved!")
 
     finally:
+        print("Scrapping Done!")
         driver.quit()
 
 
