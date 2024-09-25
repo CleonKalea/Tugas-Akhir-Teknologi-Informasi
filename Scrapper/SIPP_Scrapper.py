@@ -22,58 +22,58 @@ def wait_page(driver):
     
     return _menu_detail
 
-def scrap_data_umum(menu_detail, nama_penuntut_list, dakwaan_found):
-
-    tabel_data_umum = menu_detail.find_element(By.XPATH, ".//following::table[1]")
-    rows_data_umum = tabel_data_umum.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
+def scrap_data_umum(menu_detail):
+    _dakwaan_found = False
+    _nama_penuntut_list = []
+    _tabel_data_umum = menu_detail.find_element(By.XPATH, ".//following::table[1]")
+    _rows_data_umum = _tabel_data_umum.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
 
     try:
-        for row_data_umum in rows_data_umum:
-            contents = row_data_umum.find_elements(By.TAG_NAME, "td")
+        for _row_data_umum in _rows_data_umum:
+            _contents = _row_data_umum.find_elements(By.TAG_NAME, "td")
 
-            header_text = contents[0].text.strip()
-            content_text = contents[1]
+            _header_text = _contents[0].text.strip()
+            _content_text = _contents[1]
 
-            if header_text == "Tanggal Pendaftaran":    
-                tanggal_pendaftaran_content = content_text.text.strip()
-                print(tanggal_pendaftaran_content)
+            if _header_text == "Tanggal Pendaftaran":    
+                _tanggal_pendaftaran_content = _content_text.text.strip()
+                print(_tanggal_pendaftaran_content)
             
-            elif header_text == "Klasifikasi Perkara":
-                klasifikasi_perkara_content = content_text.text.strip()
-                print(klasifikasi_perkara_content)
+            elif _header_text == "Klasifikasi Perkara":
+                _klasifikasi_perkara_content = _content_text.text.strip()
+                print(_klasifikasi_perkara_content)
 
-            elif header_text == "Nomor Perkara":
-                nomor_perkara_content = content_text.text.strip()
-                print(nomor_perkara_content)
+            elif _header_text == "Nomor Perkara":
+                _nomor_perkara_content = _content_text.text.strip()
+                print(_nomor_perkara_content)
 
-            elif header_text == "Penuntut Umum":
-                
-                # print(content_text.get_attribute("outerHTML"))
-                rows_penuntut_umum = content_text.find_elements(By.TAG_NAME, 'tr')
+            elif _header_text == "Penuntut Umum":
+                # print(_content_text.get_attribute("outerHTML"))
+                _rows_penuntut_umum = _content_text.find_elements(By.TAG_NAME, 'tr')
                 # print("ROWS_PENUNTUT_UMUM")
 
-                for index, row_penuntut_umum in enumerate(rows_penuntut_umum):
+                for index, _row_penuntut_umum in enumerate(_rows_penuntut_umum):
                     if index == 0:
                         continue
 
                     # print("ROW_PENUNTUT_UMUM")
-                    contents_penuntut_umum = row_penuntut_umum.find_elements(By.TAG_NAME, 'td')
+                    _contents_penuntut_umum = _row_penuntut_umum.find_elements(By.TAG_NAME, 'td')
                     # print("TD FOUND")
 
-                    nama_penuntut = contents_penuntut_umum[1].text.strip()
-                    nama_penuntut_list.append(nama_penuntut) 
+                    _nama_penuntut = _contents_penuntut_umum[1].text.strip()
+                    _nama_penuntut_list.append(_nama_penuntut) 
 
-                print(nama_penuntut_list)
-            
-            # elif header_text == "Terdakwa":
+                print(_nama_penuntut_list)
 
-            elif not dakwaan_found and header_text == "Dakwaan":
-                if len(contents) > 1:
-                    dakwaan_content = contents[1].text.strip()
-                    print(dakwaan_content)
-                    dakwaan_found = True
+            elif not _dakwaan_found and _header_text == "Dakwaan":
+                if len(_contents) > 1:
+                    _dakwaan_content = _contents[1].text.strip()
+                    # print(dakwaan_content)
+                    _dakwaan_found = True
     except:
         print("error at data umum")
+    
+    return _tanggal_pendaftaran_content, _klasifikasi_perkara_content, _nomor_perkara_content, _nama_penuntut_list, _dakwaan_content
 
 def scrap_data_penetapan(menu_detail, hakim_list):
     tabel_penetapan = menu_detail.find_element(By.ID, "tabs2")
@@ -170,6 +170,9 @@ def scrap_data_putusan(menu_detail, putusan_hukuman_list):
         print(f"error at tabel putusan {e}")
 
 def main_scrapper(chrome_options, url):
+
+    df = pd.DataFrame()
+
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
@@ -192,7 +195,7 @@ def main_scrapper(chrome_options, url):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
             )
-            
+
             try:
                 driver.implicitly_wait(10)
 
@@ -211,22 +214,20 @@ def main_scrapper(chrome_options, url):
                         tabel_dashboard = driver.find_element(By.ID, 'tablePerkaraAll')
                         row = tabel_dashboard.find_elements(By.TAG_NAME, 'tr')[i]
 
-                        nomor_perkara = row.find_elements(By.TAG_NAME, 'td')[1]
-                        tanggal_register = row.find_elements(By.TAG_NAME, 'td')[2]
-                        klasifikasi_perkara = row.find_elements(By.TAG_NAME, 'td')[3]
+                        # nomor_perkara = row.find_elements(By.TAG_NAME, 'td')[1]
+                        # tanggal_register = row.find_elements(By.TAG_NAME, 'td')[2]
+                        # klasifikasi_perkara = row.find_elements(By.TAG_NAME, 'td')[3]
                         status_perkara = row.find_elements(By.TAG_NAME, 'td')[5]
                         lama_proses = row.find_elements(By.TAG_NAME, 'td')[6]
                         detail_perkara = row.find_elements(By.TAG_NAME, 'td')[-1]
 
-                        nomor_perkara_content = nomor_perkara.text.strip()
-                        tanggal_register_content = tanggal_register.text.strip()
-                        klasifikasi_perkara_content = klasifikasi_perkara.text.strip()
+                        # nomor_perkara_content = nomor_perkara.text.strip()
+                        # tanggal_register_content = tanggal_register.text.strip()
+                        # klasifikasi_perkara_content = klasifikasi_perkara.text.strip()
                         status_perkara_content = status_perkara.text.strip()
                         lama_proses_content = lama_proses.text.strip()
 
                         if status_perkara_content == "Minutasi":
-                            dakwaan_found = False
-                            nama_penuntut_list = []
                             putusan_hukuman_list = []
                             hakim_list = []
                             jumlah_data += 1
@@ -242,7 +243,7 @@ def main_scrapper(chrome_options, url):
                             link_detail_perkara.click()
 
                             menu_detail = wait_page(driver)
-                            scrap_data_umum(menu_detail, nama_penuntut_list, dakwaan_found)
+                            tanggal_pendaftaran_content, klasifikasi_perkara_content, nomor_perkara_content, nama_penuntut_list, dakwaan_content = scrap_data_umum(menu_detail)
                             
                             # Page Penetapan
                             menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
@@ -265,6 +266,18 @@ def main_scrapper(chrome_options, url):
                             menu_detail = wait_page(driver)
                             scrap_data_putusan(menu_detail, putusan_hukuman_list)
                             
+                            df['status_perkara'] = status_perkara_content
+                            df['nomor_perkara'] = nomor_perkara_content
+                            df['klasifikasi_perkara'] = klasifikasi_perkara_content
+                            df['tanggal_pendaftaran'] = tanggal_pendaftaran_content
+                            df['lama_proses'] = lama_proses_content
+                            df['penuntut_umum'] = nama_penuntut_list
+                            df['dakwaan'] = dakwaan_content
+                            df['hakim'] = hakim_list
+                            df['jumlah_saksi'] = jumlah_saksi
+                            df['putusan_hukuman'] = putusan_hukuman_list
+                            df['barang_bukti'] = amar_putusan
+
                             # Back to Dashboard                   
                             driver.back()
                             WebDriverWait(driver, 10).until(
