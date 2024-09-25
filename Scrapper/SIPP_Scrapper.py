@@ -3,11 +3,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.chrome.options import Options
 import pandas as pd
 import time
 import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
-from selenium.webdriver.chrome.options import Options
 
 def suppress_error():
     _chrome_options = Options()
@@ -15,7 +15,6 @@ def suppress_error():
     
     return _chrome_options
     
-
 def wait_page(driver: webdriver) -> WebElement:
     _menu_detail = WebDriverWait(driver, 15).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
@@ -121,12 +120,14 @@ def scrap_data_penetapan(menu_detail: WebElement) -> list:
                     try:
                         _nama_hakim = _row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[1]
                         _posisi_hakim = _row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[2]
+                        _keaktifan_hakim = _row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[3]
                         # print(row_penetapan_hakim.text)
 
                         _nama_hakim = _nama_hakim.text.strip()
                         _posisi_hakim = _posisi_hakim.text.strip()
+                        _keaktifan_hakim = _keaktifan_hakim.text.strip()
 
-                        _hakim_content = _nama_hakim + '~' + _posisi_hakim
+                        _hakim_content = _nama_hakim + '~' + _posisi_hakim + '~' + _keaktifan_hakim
                         _hakim_list.append(_hakim_content)
                         
                     except Exception as e:
@@ -216,8 +217,8 @@ def main_scrapper(chrome_options, url, previous_data):
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
-    jumlah_data = 0
-
+    jumlah_data = len(df)
+    print(jumlah_data)
     menu = WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, '.cssmenu'))
     )
@@ -231,7 +232,7 @@ def main_scrapper(chrome_options, url, previous_data):
     pidana_biasa.click()
 
     try:
-        for page in range(0, 10):
+        for page in range(0, 20):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
             )
@@ -265,7 +266,7 @@ def main_scrapper(chrome_options, url, previous_data):
                         if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara'].astype(str).values:
                             jumlah_data += 1
                             
-                            # print("\n----------------------------------------------------------------")
+                            print("\n----------------------------------------------------------------")
                             print(f"{jumlah_data} - {nomor_perkara_content} - {status_perkara_content}")
                             
                             # Page Data Umum
@@ -315,6 +316,8 @@ def main_scrapper(chrome_options, url, previous_data):
                             new_data_df = pd.DataFrame([new_data])
                             df = pd.concat([df, new_data_df], ignore_index=True)
                             print(df.iloc[-1])
+
+                            print("----------------------------------------------------------------\n")
 
                             # Back to Dashboard                   
                             driver.back()
