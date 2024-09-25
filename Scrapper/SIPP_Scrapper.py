@@ -4,17 +4,53 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.chrome.options import Options
+from pymongo import MongoClient
 import pandas as pd
 import time
+import sys
 import os
 os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+sys.path.append(os.path.abspath('../Code'))
+
+from credentials import connection_string
 
 def suppress_error():
     _chrome_options = Options()
     _chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
     
     return _chrome_options
-    
+
+def upload_to_mongodb(df, error_code):
+    database_name = 'Jakarta_Utara'
+    collection_name = "Jakarta_Utara_Raw"
+    error_catch_collection = f"Jakarta_Utara_Raw_{time.time()}"
+
+    if  error_code == 400:
+        try:
+            client = MongoClient(connection_string)
+            db = client[database_name]
+            collection = db[error_catch_collection]
+
+            data_dict = df.to_dict(orient='records')
+            collection.insert_many(data_dict)
+            print("ERROR CATCH! Data Uploaded to MongoDB")
+
+        except Exception as e:
+            print(f"Error Uploading to MongoDB: {e}")
+    else:
+        try:
+            client = MongoClient(connection_string)
+            db = client[database_name]
+            collection = db[collection_name]
+            collection.drop()
+
+            data_dict = df.to_dict(orient='records')
+            collection.insert_many(data_dict)
+            print("New Data Uploaded to MongoDB")
+
+        except Exception as e:
+            print(f"Error Uploading to MongoDB: {e}")
+
 def wait_page(driver: webdriver) -> WebElement:
     _menu_detail = WebDriverWait(driver, 15).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
@@ -217,8 +253,11 @@ def main_scrapper(chrome_options, url, previous_data):
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
 
-    jumlah_data = len(df)
+    jumlah_data_awal = len(df)
+    jumlah_data = jumlah_data_awal
+    
     print(jumlah_data)
+
     menu = WebDriverWait(driver, 10).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, '.cssmenu'))
     )
@@ -232,7 +271,7 @@ def main_scrapper(chrome_options, url, previous_data):
     pidana_biasa.click()
 
     try:
-        for page in range(0, 20):
+        for page in range(0, 21):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
             )
@@ -264,8 +303,6 @@ def main_scrapper(chrome_options, url, previous_data):
                         lama_proses_content = lama_proses.text.strip()
 
                         if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara'].astype(str).values:
-                            jumlah_data += 1
-                            
                             print("\n----------------------------------------------------------------")
                             print(f"{jumlah_data} - {nomor_perkara_content} - {status_perkara_content}")
                             
@@ -313,9 +350,12 @@ def main_scrapper(chrome_options, url, previous_data):
                                 'barang_bukti': amar_putusan,
                                 'dakwaan': dakwaan_content
                             }
+
                             new_data_df = pd.DataFrame([new_data])
                             df = pd.concat([df, new_data_df], ignore_index=True)
                             print(df.iloc[-1])
+
+                            jumlah_data += 1
 
                             print("----------------------------------------------------------------\n")
 
@@ -334,7 +374,10 @@ def main_scrapper(chrome_options, url, previous_data):
                         print(f"Error in row {i} Page {page+1}: {nomor_perkara_content} - {e}")
                         continue
                 
-                df.to_csv(previous_data, index=False)
+                if len(df) > jumlah_data_awal:
+                    df.to_csv(previous_data, index=False)
+                    print("CSV Data Saved!")
+                    upload_to_mongodb(df, 0)
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
                 next_button.click()
@@ -343,18 +386,23 @@ def main_scrapper(chrome_options, url, previous_data):
 
             except Exception as e:
                 print("Error:", e)
-                df.to_csv(f'Data/{SIPP}.csv', index=False)
-                print("Data Saved!")
+
+                df.to_csv(f'Data/{SIPP}_Error_Catch_{time.time()}.csv', index=False)
+                print("ERROR CATCH! CSV Data Saved!")
+
+                upload_to_mongodb(df, 400)
             
     except Exception as e:
         print("Error:", e)
-        df.to_csv(f'Data/{SIPP}.csv', index=False)
-        print("Data Saved!")
+        
+        df.to_csv(f'Data/{SIPP}_ERROR_CATCH!_{time.time()}.csv', index=False)
+        print("ERROR CATCH! CSV Data Saved!")
+        
+        upload_to_mongodb(df, 400)
 
     finally:
         print("Scrapping Done!")
         driver.quit()
-
 
 url = "https://sipp.pn-jakartautara.go.id/"
 SIPP = "Jakarta_Utara"
