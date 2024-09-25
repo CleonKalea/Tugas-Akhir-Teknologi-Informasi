@@ -271,11 +271,11 @@ def main_scrapper(chrome_options, url):
                             df['klasifikasi_perkara'] = klasifikasi_perkara_content
                             df['tanggal_pendaftaran'] = tanggal_pendaftaran_content
                             df['lama_proses'] = lama_proses_content
-                            df['penuntut_umum'] = nama_penuntut_list
+                            df['penuntut_umum'] = [nama_penuntut_list]
                             df['dakwaan'] = dakwaan_content
-                            df['hakim'] = hakim_list
+                            df['hakim'] = [hakim_list]
                             df['jumlah_saksi'] = jumlah_saksi
-                            df['putusan_hukuman'] = putusan_hukuman_list
+                            df['putusan_hukuman'] = [putusan_hukuman_list]
                             df['barang_bukti'] = amar_putusan
 
                             # Back to Dashboard                   
@@ -289,8 +289,10 @@ def main_scrapper(chrome_options, url):
                             continue
 
                     except Exception as e:
-                        print(f"Error in row {i} Page {page+1}: {nomor_perkara}")
+                        print(f"Error in row {i} Page {page+1}: {nomor_perkara_content} - {e}")
                         continue
+                
+                df.to_csv('test_scrap_1.csv', index=False)
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
                 next_button.click()
