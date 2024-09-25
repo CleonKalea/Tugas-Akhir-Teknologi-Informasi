@@ -129,46 +129,45 @@ def scrap_data_saksi(menu_detail):
     print(_jumlah_saksi)   
     return  _jumlah_saksi
 
-
-def scrap_data_putusan(menu_detail, putusan_hukuman_list):
-    tabel_putusan = menu_detail.find_element(By.ID, "tabs10")
-    rows_putusan = tabel_putusan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
+def scrap_data_putusan(menu_detail):
+    _putusan_hukuman_list = []
+    _tabel_putusan = menu_detail.find_element(By.ID, "tabs10")
+    _rows_putusan = _tabel_putusan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
     # print(tabel_putusan.get_attribute("outerHTML"))
 
     try:
-        for row_putusan in rows_putusan:
-            contents = row_putusan.find_elements(By.TAG_NAME, "td")
+        for _row_putusan in _rows_putusan:
+            _contents = _row_putusan.find_elements(By.TAG_NAME, "td")
 
-            header_text = contents[0].text.strip()
-            content_text = contents[1]
+            _header_text = _contents[0].text.strip()
+            _content_text = _contents[1]
 
             # print(f"row_putusan {header_text}")
 
-            if header_text == "Status Putusan":
+            if _header_text == "Status Putusan":
                 # print(content_text.get_attribute('outerHTML'))
-                tabel_status_putusan = content_text.find_element(By.XPATH, ".//following::table[1]") #find element opsional
-                rows_status_putusan = tabel_status_putusan.find_elements(By.CSS_SELECTOR,  "tr")
+                _tabel_status_putusan = _content_text.find_element(By.XPATH, ".//following::table[1]") #find element opsional
+                _rows_status_putusan = _tabel_status_putusan.find_elements(By.CSS_SELECTOR,  "tr")
 
-                for index, row_status_putusan in enumerate(rows_status_putusan):
+                for _index, _row_status_putusan in enumerate(_rows_status_putusan):
                     # print(row_status_putusan.get_attribute('outerHTML'))
-                    if index == 0:
+                    if _index == 0:
                         continue
                     
-                    columns = row_status_putusan.find_elements(By.CSS_SELECTOR, "td")
+                    _columns = _row_status_putusan.find_elements(By.CSS_SELECTOR, "td")
 
-                    nama_terdakwa = columns[1].text.strip()
-                    putusan_hukuman = columns[3].text.strip()
-
-                    hukuman_content = nama_terdakwa + "~" + putusan_hukuman
-
-                    putusan_hukuman_list.append(hukuman_content)
+                    _nama_terdakwa = _columns[1].text.strip()
+                    _putusan_hukuman = _columns[3].text.strip()
+                    _hukuman_content = _nama_terdakwa + "~" + _putusan_hukuman
+                    _putusan_hukuman_list.append(_hukuman_content)
             
-            #Amar Putusan untuk mengambil data barang bukti
-            if header_text == "Amar Putusan":
-                amar_putusan = content_text.text.strip()
-                print(amar_putusan)
+            # Amar Putusan untuk mengambil data barang bukti
+            if _header_text == "Amar Putusan":
+                _amar_putusan = _content_text.text.strip()
+                print(_amar_putusan)
 
-        print(putusan_hukuman_list)       
+        print(_putusan_hukuman_list)       
+        return _putusan_hukuman_list, _amar_putusan
 
     except Exception as e:
         print(f"error at tabel putusan {e}")
@@ -232,7 +231,6 @@ def main_scrapper(chrome_options, url):
                         lama_proses_content = lama_proses.text.strip()
 
                         if status_perkara_content == "Minutasi":
-                            putusan_hukuman_list = []
                             jumlah_data += 1
                             
                             print("\n----------------------------------------------------------------")
@@ -266,7 +264,7 @@ def main_scrapper(chrome_options, url):
                             menu_detail_putusan.click()
 
                             menu_detail = wait_page(driver)
-                            scrap_data_putusan(menu_detail, putusan_hukuman_list)
+                            putusan_hukuman_list, amar_putusan = scrap_data_putusan(menu_detail)
                             
                             df['status_perkara'] = status_perkara_content
                             df['nomor_perkara'] = nomor_perkara_content
@@ -288,12 +286,10 @@ def main_scrapper(chrome_options, url):
                             driver.execute_script("window.scrollTo(0, 0);")
 
                         else:
-                            # print(f"{page}-{i}. Bukan Minutasi")
                             continue
 
                     except Exception as e:
                         print(f"Error in row {i} Page {page+1}: {nomor_perkara}")
-                        # driver.quit()
                         continue
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
