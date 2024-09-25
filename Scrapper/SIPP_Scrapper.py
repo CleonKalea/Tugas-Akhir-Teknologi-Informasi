@@ -121,12 +121,14 @@ def scrap_data_penetapan(menu_detail):
     return _hakim_list        
 
 def scrap_data_saksi(menu_detail):
-    tabel_saksi = menu_detail.find_element(By.ID, 'tabs26')
-    rows_tabel_saksi = tabel_saksi.find_elements(By.CSS_SELECTOR, 'tr')
+    _tabel_saksi = menu_detail.find_element(By.ID, 'tabs26')
+    _rows_tabel_saksi = _tabel_saksi.find_elements(By.CSS_SELECTOR, 'tr')
 
-    jumlah_saksi = len(rows_tabel_saksi) - 1
+    _jumlah_saksi = len(_rows_tabel_saksi) - 1
 
-    print(jumlah_saksi)   
+    print(_jumlah_saksi)   
+    return  _jumlah_saksi
+
 
 def scrap_data_putusan(menu_detail, putusan_hukuman_list):
     tabel_putusan = menu_detail.find_element(By.ID, "tabs10")
@@ -257,7 +259,7 @@ def main_scrapper(chrome_options, url):
                             menu_detail_saksi.click()      
 
                             menu_detail = wait_page(driver)
-                            scrap_data_saksi(menu_detail)
+                            jumlah_saksi = scrap_data_saksi(menu_detail)
                                           
                             # Page Putusan
                             menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
