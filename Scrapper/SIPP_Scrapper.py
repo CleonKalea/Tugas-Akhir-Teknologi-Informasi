@@ -405,7 +405,7 @@ def main_scrapper(chrome_options, url, previous_data):
         driver.quit()
 
 url = "https://sipp.pn-jakartautara.go.id/"
-SIPP = "Jakarta_Utara"
+SIPP = "Jakarta_Utara_Raw"
 previous_data = f"Data/{SIPP}.csv"
 
 chrome_options = suppress_error()
