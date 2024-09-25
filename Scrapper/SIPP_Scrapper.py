@@ -2,29 +2,31 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.remote.webelement import WebElement
 import pandas as pd
 import time
+import os
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+from selenium.webdriver.chrome.options import Options
 
 def suppress_error():
-    import os
-    import tensorflow as tf
-    from selenium.webdriver.chrome.options import Options
-
     _chrome_options = Options()
     _chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # '3' only shows errors, '2' for warnings, '1' for info
-
+    
     return _chrome_options
+    
 
-def wait_page(driver):
+def wait_page(driver: webdriver) -> WebElement:
     _menu_detail = WebDriverWait(driver, 15).until(
         EC.visibility_of_element_located((By.CSS_SELECTOR, '.usual')))
     
     return _menu_detail
 
-def scrap_data_umum(menu_detail):
+def scrap_data_umum(menu_detail:  WebElement) -> tuple[str, str, str, list[str], list[str], str]:
+
     _dakwaan_found = False
     _nama_penuntut_list = []
+    _nama_terdakwa_list = []
     _tabel_data_umum = menu_detail.find_element(By.XPATH, ".//following::table[1]")
     _rows_data_umum = _tabel_data_umum.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
 
@@ -37,15 +39,15 @@ def scrap_data_umum(menu_detail):
 
             if _header_text == "Tanggal Pendaftaran":    
                 _tanggal_pendaftaran_content = _content_text.text.strip()
-                print(_tanggal_pendaftaran_content)
+                # print(_tanggal_pendaftaran_content)
             
             elif _header_text == "Klasifikasi Perkara":
                 _klasifikasi_perkara_content = _content_text.text.strip()
-                print(_klasifikasi_perkara_content)
+                # print(_klasifikasi_perkara_content)
 
             elif _header_text == "Nomor Perkara":
                 _nomor_perkara_content = _content_text.text.strip()
-                print(_nomor_perkara_content)
+                # print(_nomor_perkara_content)
 
             elif _header_text == "Penuntut Umum":
                 # print(_content_text.get_attribute("outerHTML"))
@@ -63,7 +65,25 @@ def scrap_data_umum(menu_detail):
                     _nama_penuntut = _contents_penuntut_umum[1].text.strip()
                     _nama_penuntut_list.append(_nama_penuntut) 
 
-                print(_nama_penuntut_list)
+                # print(_nama_penuntut_list)
+
+            elif _header_text == "Terdakwa":
+                # print(_content_text.get_attribute("outerHTML"))
+                _rows_terdakwa = _content_text.find_elements(By.TAG_NAME, 'tr')
+                # print("ROWS_terdakwa")
+
+                for index, _row_terdakwa in enumerate(_rows_terdakwa):
+                    if index == 0:
+                        continue
+
+                    # print("ROW_terdakwa")
+                    _contents_terdakwa = _row_terdakwa.find_elements(By.TAG_NAME, 'td')
+                    # print("TD FOUND")
+
+                    _nama_terdakwa = _contents_terdakwa[1].text.strip()
+                    _nama_terdakwa_list.append(_nama_terdakwa) 
+
+                print(_nama_terdakwa_list)
 
             elif not _dakwaan_found and _header_text == "Dakwaan":
                 if len(_contents) > 1:
@@ -73,9 +93,9 @@ def scrap_data_umum(menu_detail):
     except:
         print("error at data umum")
     
-    return _tanggal_pendaftaran_content, _klasifikasi_perkara_content, _nomor_perkara_content, _nama_penuntut_list, _dakwaan_content
+    return _tanggal_pendaftaran_content, _klasifikasi_perkara_content, _nomor_perkara_content, _nama_penuntut_list, _nama_terdakwa_list, _dakwaan_content
 
-def scrap_data_penetapan(menu_detail):
+def scrap_data_penetapan(menu_detail: WebElement) -> list:
     _hakim_list = []
     _tabel_penetapan = menu_detail.find_element(By.ID, "tabs2")
     _rows_penetapan = _tabel_penetapan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
@@ -117,19 +137,19 @@ def scrap_data_penetapan(menu_detail):
             except Exception as e:
                 print(f"error at tabel penetapan {e}")
 
-    print(_hakim_list)
+    # print(_hakim_list)
     return _hakim_list        
 
-def scrap_data_saksi(menu_detail):
+def scrap_data_saksi(menu_detail) -> int:
     _tabel_saksi = menu_detail.find_element(By.ID, 'tabs26')
     _rows_tabel_saksi = _tabel_saksi.find_elements(By.CSS_SELECTOR, 'tr')
 
     _jumlah_saksi = len(_rows_tabel_saksi) - 1
 
-    print(_jumlah_saksi)   
+    # print(_jumlah_saksi)   
     return  _jumlah_saksi
 
-def scrap_data_putusan(menu_detail):
+def scrap_data_putusan(menu_detail) -> tuple[list, str]:
     _putusan_hukuman_list = []
     _tabel_putusan = menu_detail.find_element(By.ID, "tabs10")
     _rows_putusan = _tabel_putusan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
@@ -164,17 +184,36 @@ def scrap_data_putusan(menu_detail):
             # Amar Putusan untuk mengambil data barang bukti
             if _header_text == "Amar Putusan":
                 _amar_putusan = _content_text.text.strip()
-                print(_amar_putusan)
+                # print(_amar_putusan)
 
-        print(_putusan_hukuman_list)       
+        # print(_putusan_hukuman_list)       
         return _putusan_hukuman_list, _amar_putusan
 
     except Exception as e:
         print(f"error at tabel putusan {e}")
 
-def main_scrapper(chrome_options, url):
+def main_scrapper(chrome_options, url, previous_data):
 
-    df = pd.DataFrame()
+    if os.path.exists(previous_data):
+        df = pd.read_csv(previous_data)
+
+    else:
+        df = pd.DataFrame(columns=[
+            'status_perkara', 
+            'nomor_perkara', 
+            'klasifikasi_perkara', 
+            'tanggal_pendaftaran', 
+            'lama_proses',
+            'terdakwa', 
+            'penuntut_umum', 
+            'hakim', 
+            'jumlah_saksi', 
+            'putusan_hukuman', 
+            'barang_bukti',
+            'dakwaan'
+        ])
+
+    print(df)
 
     driver = webdriver.Chrome(options=chrome_options)
     driver.get(url)
@@ -217,11 +256,6 @@ def main_scrapper(chrome_options, url):
                         tabel_dashboard = driver.find_element(By.ID, 'tablePerkaraAll')
                         row = tabel_dashboard.find_elements(By.TAG_NAME, 'tr')[i]
 
-                        # tanggal_register = row.find_elements(By.TAG_NAME, 'td')[2]
-                        # klasifikasi_perkara = row.find_elements(By.TAG_NAME, 'td')[3]
-                        # tanggal_register_content = tanggal_register.text.strip()
-                        # klasifikasi_perkara_content = klasifikasi_perkara.text.strip()
-
                         nomor_perkara = row.find_elements(By.TAG_NAME, 'td')[1]
                         nomor_perkara_content = nomor_perkara.text.strip()
                         status_perkara = row.find_elements(By.TAG_NAME, 'td')[5]
@@ -230,20 +264,20 @@ def main_scrapper(chrome_options, url):
                         status_perkara_content = status_perkara.text.strip()
                         lama_proses_content = lama_proses.text.strip()
 
-                        if status_perkara_content == "Minutasi":
+                        if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara']:
                             jumlah_data += 1
                             
-                            print("\n----------------------------------------------------------------")
+                            # print("\n----------------------------------------------------------------")
                             print(f"{jumlah_data} - {nomor_perkara_content} - {status_perkara_content}")
                             
                             # Page Data Umum
-                            link_detail_perkara = WebDriverWait(driver, 10).until(
+                            link_detail_perkara = WebDriverWait(driver, 60).until(
                                 EC.element_to_be_clickable((detail_perkara.find_element(By.TAG_NAME, 'a')))
                             )
                             link_detail_perkara.click()
 
                             menu_detail = wait_page(driver)
-                            tanggal_pendaftaran_content, klasifikasi_perkara_content, nomor_perkara_content, nama_penuntut_list, dakwaan_content = scrap_data_umum(menu_detail)
+                            tanggal_pendaftaran_content, klasifikasi_perkara_content, nomor_perkara_content, nama_penuntut_list, nama_terdakwa_list, dakwaan_content = scrap_data_umum(menu_detail)
                             
                             # Page Penetapan
                             menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
@@ -266,17 +300,23 @@ def main_scrapper(chrome_options, url):
                             menu_detail = wait_page(driver)
                             putusan_hukuman_list, amar_putusan = scrap_data_putusan(menu_detail)
                             
-                            df['status_perkara'] = status_perkara_content
-                            df['nomor_perkara'] = nomor_perkara_content
-                            df['klasifikasi_perkara'] = klasifikasi_perkara_content
-                            df['tanggal_pendaftaran'] = tanggal_pendaftaran_content
-                            df['lama_proses'] = lama_proses_content
-                            df['penuntut_umum'] = [nama_penuntut_list]
-                            df['dakwaan'] = dakwaan_content
-                            df['hakim'] = [hakim_list]
-                            df['jumlah_saksi'] = jumlah_saksi
-                            df['putusan_hukuman'] = [putusan_hukuman_list]
-                            df['barang_bukti'] = amar_putusan
+                            new_data = {
+                                'status_perkara': status_perkara_content,
+                                'nomor_perkara': nomor_perkara_content,
+                                'klasifikasi_perkara': klasifikasi_perkara_content,
+                                'tanggal_pendaftaran': tanggal_pendaftaran_content,
+                                'lama_proses': lama_proses_content,
+                                'terdakwa' : nama_terdakwa_list,
+                                'penuntut_umum': nama_penuntut_list,
+                                'hakim': hakim_list,
+                                'jumlah_saksi': jumlah_saksi,
+                                'putusan_hukuman': putusan_hukuman_list,
+                                'barang_bukti': amar_putusan,
+                                'dakwaan': dakwaan_content
+                            }
+                            new_data_df = pd.DataFrame([new_data])
+                            df = pd.concat([df, new_data_df], ignore_index=True)
+                            print(df)
 
                             # Back to Dashboard                   
                             driver.back()
@@ -286,13 +326,14 @@ def main_scrapper(chrome_options, url):
                             driver.execute_script("window.scrollTo(0, 0);")
 
                         else:
+                            print(f"Skipping {nomor_perkara_content} - {status_perkara_content}")
                             continue
 
                     except Exception as e:
                         print(f"Error in row {i} Page {page+1}: {nomor_perkara_content} - {e}")
                         continue
                 
-                df.to_csv('test_scrap_1.csv', index=False)
+                df.to_csv(previous_data, index=False)
 
                 next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
                 next_button.click()
@@ -304,12 +345,16 @@ def main_scrapper(chrome_options, url):
             
     except Exception as e:
         print("Error:", e)
+        df.to_csv(f'Data/{SIPP}.csv', index=False)
+        print("Data Saved!")
 
     finally:
         driver.quit()
 
 
 url = "https://sipp.pn-jakartautara.go.id/"
+SIPP = "Jakarta_Utara"
+previous_data = f"Data/{SIPP}.csv"
 
 chrome_options = suppress_error()
-main_scrapper(chrome_options, url)
+main_scrapper(chrome_options, url, previous_data)
