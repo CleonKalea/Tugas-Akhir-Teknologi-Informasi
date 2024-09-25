@@ -75,40 +75,41 @@ def scrap_data_umum(menu_detail):
     
     return _tanggal_pendaftaran_content, _klasifikasi_perkara_content, _nomor_perkara_content, _nama_penuntut_list, _dakwaan_content
 
-def scrap_data_penetapan(menu_detail, hakim_list):
-    tabel_penetapan = menu_detail.find_element(By.ID, "tabs2")
-    rows_penetapan = tabel_penetapan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
+def scrap_data_penetapan(menu_detail):
+    _hakim_list = []
+    _tabel_penetapan = menu_detail.find_element(By.ID, "tabs2")
+    _rows_penetapan = _tabel_penetapan.find_elements(By.CSS_SELECTOR, "tr:not(tr tr)")
     # print("PASS ROWS_PENETAPAN")
     # print("Table HTML:")
     # print(tabel_penetapan.get_attribute('outerHTML'))
 
-    for index_penetapan, row_penetapan in enumerate(rows_penetapan):
+    for _index_penetapan, _row_penetapan in enumerate(_rows_penetapan):
         # print(index_penetapan)
-        if index_penetapan == 1:
+        if _index_penetapan == 1:
             try:
-                tabel_penetapan_hakim = row_penetapan.find_elements(By. TAG_NAME, 'td')
-                tabel_penetapan_hakim = tabel_penetapan_hakim[0]
+                _tabel_penetapan_hakim = _row_penetapan.find_elements(By. TAG_NAME, 'td')
+                _tabel_penetapan_hakim = _tabel_penetapan_hakim[0]
 
-                content_tabel_penetapan_hakim = tabel_penetapan_hakim.find_element(By.XPATH, ".//following::table[1]")
-                rows_penetapan_hakim = content_tabel_penetapan_hakim.find_elements(By.CSS_SELECTOR, "tr")
+                _content_tabel_penetapan_hakim = _tabel_penetapan_hakim.find_element(By.XPATH, ".//following::table[1]")
+                _rows_penetapan_hakim = _content_tabel_penetapan_hakim.find_elements(By.CSS_SELECTOR, "tr")
                 # print(tabel_penetapan_hakim.get_attribute('outerHTML'))
                 # print(rows_penetapan_hakim.text)
 
-                for index_penetapan_hakim, row_penetapan_hakim in enumerate(rows_penetapan_hakim):
+                for _index_penetapan_hakim, _row_penetapan_hakim in enumerate(_rows_penetapan_hakim):
                     # print(f" INDEX PENETAPAN HAKIM : {index_penetapan_hakim}")
-                    if index_penetapan_hakim == 0:
+                    if _index_penetapan_hakim == 0:
                         continue
 
                     try:
-                        nama_hakim = row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[1]
-                        posisi_hakim = row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[2]
+                        _nama_hakim = _row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[1]
+                        _posisi_hakim = _row_penetapan_hakim.find_elements(By.TAG_NAME, 'td')[2]
                         # print(row_penetapan_hakim.text)
 
-                        nama_hakim = nama_hakim.text.strip()
-                        posisi_hakim = posisi_hakim.text.strip()
+                        _nama_hakim = _nama_hakim.text.strip()
+                        _posisi_hakim = _posisi_hakim.text.strip()
 
-                        hakim_content = nama_hakim + '~' + posisi_hakim
-                        hakim_list.append(hakim_content)
+                        _hakim_content = _nama_hakim + '~' + _posisi_hakim
+                        _hakim_list.append(_hakim_content)
                         
                     except Exception as e:
                         print(f"error at tabel penetapan hakim {e}")
@@ -116,7 +117,8 @@ def scrap_data_penetapan(menu_detail, hakim_list):
             except Exception as e:
                 print(f"error at tabel penetapan {e}")
 
-    print(hakim_list)        
+    print(_hakim_list)
+    return _hakim_list        
 
 def scrap_data_saksi(menu_detail):
     tabel_saksi = menu_detail.find_element(By.ID, 'tabs26')
@@ -214,29 +216,27 @@ def main_scrapper(chrome_options, url):
                         tabel_dashboard = driver.find_element(By.ID, 'tablePerkaraAll')
                         row = tabel_dashboard.find_elements(By.TAG_NAME, 'tr')[i]
 
-                        # nomor_perkara = row.find_elements(By.TAG_NAME, 'td')[1]
                         # tanggal_register = row.find_elements(By.TAG_NAME, 'td')[2]
                         # klasifikasi_perkara = row.find_elements(By.TAG_NAME, 'td')[3]
+                        # tanggal_register_content = tanggal_register.text.strip()
+                        # klasifikasi_perkara_content = klasifikasi_perkara.text.strip()
+
+                        nomor_perkara = row.find_elements(By.TAG_NAME, 'td')[1]
+                        nomor_perkara_content = nomor_perkara.text.strip()
                         status_perkara = row.find_elements(By.TAG_NAME, 'td')[5]
                         lama_proses = row.find_elements(By.TAG_NAME, 'td')[6]
                         detail_perkara = row.find_elements(By.TAG_NAME, 'td')[-1]
-
-                        # nomor_perkara_content = nomor_perkara.text.strip()
-                        # tanggal_register_content = tanggal_register.text.strip()
-                        # klasifikasi_perkara_content = klasifikasi_perkara.text.strip()
                         status_perkara_content = status_perkara.text.strip()
                         lama_proses_content = lama_proses.text.strip()
 
                         if status_perkara_content == "Minutasi":
                             putusan_hukuman_list = []
-                            hakim_list = []
                             jumlah_data += 1
                             
                             print("\n----------------------------------------------------------------")
-                            print(f"{jumlah_data} - {nomor_perkara_content} - {tanggal_register_content} - {klasifikasi_perkara_content} - {status_perkara_content}")
+                            print(f"{jumlah_data} - {nomor_perkara_content} - {status_perkara_content}")
                             
                             # Page Data Umum
-
                             link_detail_perkara = WebDriverWait(driver, 10).until(
                                 EC.element_to_be_clickable((detail_perkara.find_element(By.TAG_NAME, 'a')))
                             )
@@ -250,7 +250,7 @@ def main_scrapper(chrome_options, url):
                             menu_detail_penetapan.click()
 
                             menu_detail = wait_page(driver)
-                            scrap_data_penetapan(menu_detail, hakim_list)
+                            hakim_list = scrap_data_penetapan(menu_detail)
 
                             # Page Saksi
                             menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
