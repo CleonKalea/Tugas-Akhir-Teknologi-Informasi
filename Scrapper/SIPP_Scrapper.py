@@ -21,10 +21,6 @@ def suppress_error():
     return _chrome_options
 
 def upload_to_mongodb(df, error_code):
-    database_name = 'Jakarta_Utara'
-    collection_name = "Jakarta_Utara_Raw"
-    error_catch_collection = f"Jakarta_Utara_Raw_{time.time()}"
-
     if  error_code == 400:
         try:
             client = MongoClient(connection_string)
@@ -227,7 +223,7 @@ def scrap_data_putusan(menu_detail) -> tuple[list, str]:
     except Exception as e:
         print(f"error at tabel putusan {e}")
 
-def main_scrapper(chrome_options, url, previous_data):
+def main_scrapper(chrome_options, url, previous_data, page_range):
 
     if os.path.exists(previous_data):
         df = pd.read_csv(previous_data)
@@ -271,7 +267,7 @@ def main_scrapper(chrome_options, url, previous_data):
     pidana_biasa.click()
 
     try:
-        for page in range(0, 76):
+        for page in range(0, page_range):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
             )
@@ -388,8 +384,11 @@ def main_scrapper(chrome_options, url, previous_data):
                     print("CSV Data Saved!")
                     upload_to_mongodb(df, 0)
 
-                next_button = driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')
+                next_button = WebDriverWait(driver, 60).until(
+                    EC.element_to_be_clickable((driver.find_element(By.CSS_SELECTOR, 'a.page-link.next')))
+                )
                 next_button.click()
+                
 
                 time.sleep(2)
 
@@ -421,9 +420,14 @@ def main_scrapper(chrome_options, url, previous_data):
             print("No New Data!")
         driver.quit()
 
-url = "https://sipp.pn-jakartautara.go.id/"
-SIPP = "Jakarta_Utara_Raw"
-previous_data = f"Data/{SIPP}.csv"
+url = "https://sipp.pn-singaraja.go.id/"
+SIPP = "Singaraja"
+previous_data = f"Data/{SIPP}_Raw.csv"
+database_name = SIPP
+collection_name = f"{database_name}_Raw"
+error_catch_collection = f"{collection_name}_{time.time()}"
+
+page_range = 72
 
 chrome_options = suppress_error()
-main_scrapper(chrome_options, url, previous_data)
+main_scrapper(chrome_options, url, previous_data, page_range)
