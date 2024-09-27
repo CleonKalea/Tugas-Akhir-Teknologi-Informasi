@@ -271,7 +271,7 @@ def main_scrapper(chrome_options, url, previous_data):
     pidana_biasa.click()
 
     try:
-        for page in range(0, 21):
+        for page in range(0, 76):
             WebDriverWait(driver, 10).until(
                 EC.presence_of_element_located((By.ID, 'tablePerkaraAll'))
             )
@@ -301,7 +301,7 @@ def main_scrapper(chrome_options, url, previous_data):
                         detail_perkara = row.find_elements(By.TAG_NAME, 'td')[-1]
                         status_perkara_content = status_perkara.text.strip()
                         lama_proses_content = lama_proses.text.strip()
-
+                        
                         if status_perkara_content == "Minutasi" and nomor_perkara_content not in df['nomor_perkara'].astype(str).values:
                             print("\n----------------------------------------------------------------")
                             print(f"{jumlah_data} - {nomor_perkara_content} - {status_perkara_content}")
@@ -312,60 +312,69 @@ def main_scrapper(chrome_options, url, previous_data):
                             )
                             link_detail_perkara.click()
 
-                            menu_detail = wait_page(driver)
-                            tanggal_pendaftaran_content, klasifikasi_perkara_content, nomor_perkara_content, nama_penuntut_list, nama_terdakwa_list, dakwaan_content = scrap_data_umum(menu_detail)
-                            
-                            # Page Penetapan
-                            menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
-                            menu_detail_penetapan.click()
+                            try:
+                                menu_detail = wait_page(driver)
+                                tanggal_pendaftaran_content, klasifikasi_perkara_content, nomor_perkara_content, nama_penuntut_list, nama_terdakwa_list, dakwaan_content = scrap_data_umum(menu_detail)
+                                
+                                # Page Penetapan
+                                menu_detail_penetapan = menu_detail.find_element(By.XPATH, ".//a[text()='Penetapan']")
+                                menu_detail_penetapan.click()
 
-                            menu_detail = wait_page(driver)
-                            hakim_list = scrap_data_penetapan(menu_detail)
+                                menu_detail = wait_page(driver)
+                                hakim_list = scrap_data_penetapan(menu_detail)
 
-                            # Page Saksi
-                            menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
-                            menu_detail_saksi.click()      
+                                # Page Saksi
+                                menu_detail_saksi = menu_detail.find_element(By.XPATH, ".//a[text()='Saksi']")
+                                menu_detail_saksi.click()      
 
-                            menu_detail = wait_page(driver)
-                            jumlah_saksi = scrap_data_saksi(menu_detail)
-                                          
-                            # Page Putusan
-                            menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
-                            menu_detail_putusan.click()
+                                menu_detail = wait_page(driver)
+                                jumlah_saksi = scrap_data_saksi(menu_detail)
+                                            
+                                # Page Putusan
+                                menu_detail_putusan = menu_detail.find_element(By.XPATH, ".//a[text()='Putusan']")
+                                menu_detail_putusan.click()
 
-                            menu_detail = wait_page(driver)
-                            putusan_hukuman_list, amar_putusan = scrap_data_putusan(menu_detail)
-                            
-                            new_data = {
-                                'status_perkara': status_perkara_content,
-                                'nomor_perkara': nomor_perkara_content,
-                                'klasifikasi_perkara': klasifikasi_perkara_content,
-                                'tanggal_pendaftaran': tanggal_pendaftaran_content,
-                                'lama_proses': lama_proses_content,
-                                'terdakwa' : nama_terdakwa_list,
-                                'penuntut_umum': nama_penuntut_list,
-                                'hakim': hakim_list,
-                                'jumlah_saksi': jumlah_saksi,
-                                'putusan_hukuman': putusan_hukuman_list,
-                                'barang_bukti': amar_putusan,
-                                'dakwaan': dakwaan_content
-                            }
+                                menu_detail = wait_page(driver)
+                                putusan_hukuman_list, amar_putusan = scrap_data_putusan(menu_detail)
+                                
+                                new_data = {
+                                    'status_perkara': status_perkara_content,
+                                    'nomor_perkara': nomor_perkara_content,
+                                    'klasifikasi_perkara': klasifikasi_perkara_content,
+                                    'tanggal_pendaftaran': tanggal_pendaftaran_content,
+                                    'lama_proses': lama_proses_content,
+                                    'terdakwa' : nama_terdakwa_list,
+                                    'penuntut_umum': nama_penuntut_list,
+                                    'hakim': hakim_list,
+                                    'jumlah_saksi': jumlah_saksi,
+                                    'putusan_hukuman': putusan_hukuman_list,
+                                    'barang_bukti': amar_putusan,
+                                    'dakwaan': dakwaan_content
+                                }
 
-                            new_data_df = pd.DataFrame([new_data])
-                            df = pd.concat([df, new_data_df], ignore_index=True)
-                            print(df.iloc[-1])
+                                new_data_df = pd.DataFrame([new_data])
+                                df = pd.concat([df, new_data_df], ignore_index=True)
+                                print(df.iloc[-1])
 
-                            jumlah_data += 1
+                                jumlah_data += 1
 
-                            print("----------------------------------------------------------------\n")
+                                print("----------------------------------------------------------------\n")
 
-                            # Back to Dashboard                   
-                            driver.back()
-                            WebDriverWait(driver, 10).until(
-                                EC.visibility_of_element_located((By.CSS_SELECTOR, '.cssmenu'))
-                            )
-                            driver.execute_script("window.scrollTo(0, 0);")
+                                # Back to Dashboard                   
+                                driver.back()
+                                WebDriverWait(driver, 10).until(
+                                    EC.visibility_of_element_located((By.CSS_SELECTOR, '.cssmenu'))
+                                )
+                                driver.execute_script("window.scrollTo(0, 0);")
 
+                            except Exception as e:
+                                print(f"Error scrapping data in {nomor_perkara_content}: {e}")
+                                driver.back()
+                                WebDriverWait(driver, 10).until(
+                                    EC.visibility_of_element_located((By.CSS_SELECTOR, '.cssmenu'))
+                                )
+                                driver.execute_script("window.scrollTo(0, 0);")
+                                continue
                         else:
                             print(f"Skipping {nomor_perkara_content} - {status_perkara_content}")
                             continue
@@ -401,7 +410,15 @@ def main_scrapper(chrome_options, url, previous_data):
         upload_to_mongodb(df, 400)
 
     finally:
-        print("Scrapping Done!")
+        if len(df) > jumlah_data_awal:
+            df.to_csv(previous_data, index=False)
+            print("CSV Data Saved!")
+            upload_to_mongodb(df, 0)
+            print("Scrapping Done!")
+
+        else:
+            print("Scrapping Done!")
+            print("No New Data!")
         driver.quit()
 
 url = "https://sipp.pn-jakartautara.go.id/"
