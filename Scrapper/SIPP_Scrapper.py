@@ -420,14 +420,15 @@ def main_scrapper(chrome_options, url, previous_data, page_range):
             print("No New Data!")
         driver.quit()
 
-url = "https://sipp.pn-singaraja.go.id/"
-SIPP = "Singaraja"
-previous_data = f"Data/{SIPP}_Raw.csv"
-database_name = SIPP
-collection_name = f"{database_name}_Raw"
-error_catch_collection = f"{collection_name}_{time.time()}"
+url = "https://sipp.pn-negara.go.id/"
+provinsi = "Bali"
+SIPP = "Negara"
+page_range = 48
 
-page_range = 72
+previous_data = f"Data/{provinsi}_{SIPP}_Raw.csv"
+database_name = SIPP
+collection_name = f"{provinsi}_{database_name}_Raw"
+error_catch_collection = f"{collection_name}_{time.time()}"
 
 chrome_options = suppress_error()
 main_scrapper(chrome_options, url, previous_data, page_range)
