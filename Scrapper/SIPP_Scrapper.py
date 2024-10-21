@@ -420,10 +420,10 @@ def main_scrapper(chrome_options, url, previous_data, page_range):
             print("No New Data!")
         driver.quit()
 
-url = "https://sipp.pn-amlapura.go.id/"
+url = "https://sipp.pn-semarapura.go.id/"
 provinsi = "Bali"
-SIPP = "Karangasem"
-page_range = 39
+SIPP = "Klungkung"
+page_range = 41
 
 previous_data = f"Data/{provinsi}_{SIPP}_Raw.csv"
 database_name = SIPP
