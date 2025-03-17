@@ -1,0 +1,53 @@
+/* src/components/MainContent.css */
+.main-content {
+    width:100%;
+    height: max-content;
+    display: flex;
+    flex-direction: row;
+    margin: 20px 0px;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .predict-main-content-container {
+    display: flex;
+    justify-content: center; 
+    flex-wrap: wrap;
+  }
+
+  .predict-main-content-chart-container {
+    display: flex;
+    justify-content: center; 
+    flex-wrap: wrap;
+    flex-direction: row;
+    align-content: center;
+    align-items: center;
+  }
+
+.base {
+    width: 80%;
+    margin: 35px 5px;
+    padding: 20px;
+    background-color: #e8e8e9;
+    
+  }
+
+  .maincontent-box-1 {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .AnalyticCard {
+    margin: 30px 0px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
+    }
+  
