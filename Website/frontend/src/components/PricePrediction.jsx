@@ -9,6 +9,7 @@ import BarChart from './BarChart'
 const PricePrediction = () => {
 
   const [datas, setDatas] = useState([]);
+  const [predictedPrices, setPredictedPrices] = useState({});
 
 
   useEffect(() => {
@@ -63,6 +64,7 @@ const PricePrediction = () => {
       <div className='main-content'>
         <div className="predict-main-content-container">
           <PredictCard onPredictionResult={handlePredictionResult} data={datas}/>
+          {Object.keys(predictedPrices).length > 0 && <PredictCardResult data={predictedPrices} />}
         </div>
       </div>
 
