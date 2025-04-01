@@ -27,7 +27,7 @@ const PredictCard = ({ onPredictionResult, data }) => {
     try {
       const response = await fetch('http://127.0.0.1:5000/predict', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }, // Ensure the server accepts JSON
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
@@ -117,7 +117,20 @@ const PredictCard = ({ onPredictionResult, data }) => {
             </div>
           </div>
         </div>
+        {/* Hakim Dropdown */}
+        <div className="predict-card-content">
+          <div className='predict-card-content-input'>
+            <h3>Pasal</h3>
+            <div className="predict-card-content-input-dropdown">
+              <select value={selectedHakim} onChange={(e) => setSelectedHakim(e.target.value)}>
+                <option value="" disabled>Select an option</option>
+                
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
+
 
       <div className="predict-textbox-container">
         <h2>Barang Bukti</h2>
