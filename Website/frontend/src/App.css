@@ -8,6 +8,7 @@
 body, html, #root {
   height: 100%;
   margin: 0;
+  background-color: #2A2B2E ;
 }
 
 .App {

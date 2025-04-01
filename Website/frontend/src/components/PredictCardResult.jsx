@@ -4,8 +4,8 @@ import './PredictCardResult.css'
 const formatMonths = (months) => {
     if (!months || isNaN(months)) return "N/A";
     
-    const years = Math.floor(months / 12); // Get whole years
-    const remainingMonths = months % 12;  // Get remaining months
+    const years = Math.floor(months / 12);
+    const remainingMonths = months % 12;
   
     if (years > 0 && remainingMonths > 0) {
       return `${years} Tahun ${remainingMonths} Bulan`;

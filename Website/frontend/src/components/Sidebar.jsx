@@ -3,7 +3,7 @@ import './Sidebar.css';
 import sidebarLogo from '../assets/logo.png';
 
 const Sidebar = ({ onPageChange }) => {
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('prediction');
 
   const handlePageChange = (page) => {
     setActivePage(page);
@@ -18,23 +18,23 @@ const Sidebar = ({ onPageChange }) => {
       </div>
       
       <div
-        className={activePage === 'dashboard' ? 'sidebar-box-1-active' : 'sidebar-box-1-inactive'}
-        onClick={() => handlePageChange('dashboard')}
+        className={activePage === 'prediction' ? 'sidebar-box-1-active' : 'sidebar-box-1-inactive'}
+        onClick={() => handlePageChange('prediction')}
       >
         <div className='sidebar-box-2'>
           <img src="https://img.icons8.com/ios-filled/50/FFFFFF/home.png" alt="Dashboard" className='sidebar-logo-2'/>
         </div>
-        <span className="sidebar-title-2">Land Overview</span>
+        <span className="sidebar-title-2">Indictment Prediction</span>
       </div>
       
       <div
-        className={activePage === 'pricePrediction' ? 'sidebar-box-1-active' : 'sidebar-box-1-inactive'}
-        onClick={() => handlePageChange('pricePrediction')}
+        className={activePage === 'modelExplanation' ? 'sidebar-box-1-active' : 'sidebar-box-1-inactive'}
+        onClick={() => handlePageChange('modelExplanation')}
       >
         <div className='sidebar-box-2'>
           <img src="https://img.icons8.com/windows/96/FFFFFF/total-sales--v1.png" className='sidebar-logo-2'/>
         </div>
-        <span className="sidebar-title-2">Indictment Prediction</span>
+        <span className="sidebar-title-2">Model Explanation</span>
       </div>
     </div>
   );

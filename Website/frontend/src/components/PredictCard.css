@@ -1,7 +1,8 @@
 .predict-card-base {
+    width: 80%;
     height: max-content; 
     display: flex;
-    flex-direction: row;
+
     padding: 0px 50px;
     padding-bottom: 0px;
     background-color: #f9f9f9;
@@ -20,7 +21,7 @@
   .predict-card-content {
     background-color: #4FD1C5;
     margin-top: 20px;
-    padding: 27px 0px;
+    padding: 20px 0px;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -49,7 +50,7 @@
     align-self: center;
     align-content: center;
     /* background-color: #38b2ac; */
-    padding: 10px 50px;
+    padding: 1em 1em;
   }
   
   .predict-card-content-input-dropdown {
@@ -137,4 +138,13 @@
     overflow-wrap: break-word; /* Ensure text breaks properly */
     word-wrap: break-word; /* Legacy support */
     resize: vertical; /* Allow users to resize height */
+}
+
+.predict-textbox-container{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
 }

@@ -123,7 +123,7 @@ const PredictCard = ({ onPredictionResult, data }) => {
       <div className="predict-card-header">
         <h2>Barang Bukti</h2>
       </div>
-      <div className="predict-card-base">
+      <div className="predict-textbox-container">
         <textarea
           value={barangBukti}
           onChange={(e) => setBarangBukti(e.target.value)}
@@ -136,7 +136,7 @@ const PredictCard = ({ onPredictionResult, data }) => {
       <div className="predict-card-header">
         <h2>Dakwaan</h2>
       </div>
-      <div className="predict-card-base">
+      <div className="predict-textbox-container"  >
         <textarea
           value={dakwaan}
           onChange={(e) => setDakwaan(e.target.value)}

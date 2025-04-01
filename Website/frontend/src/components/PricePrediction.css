@@ -1,9 +1,9 @@
 /* src/components/MainContent.css */
 .main-content {
-    width:100%;
+    width:80%;
     height: max-content;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     margin: 20px 0px;
     padding: 20px;
     background-color: #f9f9f9;
@@ -21,7 +21,7 @@
     display: flex;
     justify-content: center; 
     flex-wrap: wrap;
-    flex-direction: row;
+    flex-direction: column;
     align-content: center;
     align-items: center;
   }

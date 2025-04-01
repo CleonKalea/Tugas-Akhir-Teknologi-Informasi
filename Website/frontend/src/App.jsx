@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import Sidebar from './components/Sidebar';
-import PricePrediction from './components/PricePrediction'; // Assuming you have a PricePrediction component
+import PricePrediction from './components/PricePrediction'; 
 import './App.css';
 import Dashboard from './components/Dashboard';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [currentPage, setCurrentPage] = useState('prediction');
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -15,8 +15,8 @@ function App() {
     <div className="App">
       <div className="dashboard">
         <Sidebar onPageChange={handlePageChange} />
-        {currentPage === 'dashboard' && <Dashboard />}
-        {currentPage === 'pricePrediction' && <PricePrediction />}
+        {currentPage === 'prediction' && <PricePrediction />}
+        {currentPage === 'modelExplanation' && <Dashboard />}
       </div>
     </div>
   );

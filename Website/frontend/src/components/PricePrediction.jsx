@@ -35,7 +35,7 @@ const PricePrediction = () => {
     },
 
     { title: 'Model Accuracy', 
-      value: "92% ", 
+      value: "-% ", 
       image: "https://img.icons8.com/ios-filled/50/FFFFFF/country.png" 
     },
 
@@ -62,10 +62,8 @@ const PricePrediction = () => {
       </div>
 
       <div className='main-content'>
-        <div className="predict-main-content-container">
           <PredictCard onPredictionResult={handlePredictionResult} data={datas}/>
           {Object.keys(predictedPrices).length > 0 && <PredictCardResult data={predictedPrices} />}
-        </div>
       </div>
 
     </div>

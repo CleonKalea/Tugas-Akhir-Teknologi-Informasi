@@ -2,12 +2,13 @@
 .AnalyticCard-box {
     background-color:  #f9f9f9;
     display: flex;
-    width: 350px;
+    width: 13vw;
     padding: 15px 20px;
     align-items: center;
     justify-content: space-between;
     border-radius: 15px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 1vw;
 }
 
 .AnalyticCard-Text-Box-1 {
