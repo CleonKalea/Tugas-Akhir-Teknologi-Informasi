@@ -4,6 +4,7 @@ from flask_cors import CORS
 import tensorflow as tf
 import numpy as np
 from transformers import AutoTokenizer, TFBertModel
+import re
 
 app = Flask(__name__)
 CORS(app)
@@ -41,9 +42,41 @@ def init_lstm():
 
     return lstm_model, lstm_tokenizer
 
-
 bert_model, bert_tokenizer = init_bert()
 lstm_model, lstm_tokenizer = init_lstm()
+
+def clean_text(text):
+    cleaned_text = re.sub(r'[^a-zA-Z0-9., /\\()\"\'\n-]+', '', text)
+    cleaned_text = re.sub(r'-{2,}', '-', cleaned_text)
+    cleaned_text = re.sub(r' +', ' ', cleaned_text)
+    cleaned_text = re.sub(r'\n', '. ', cleaned_text)
+    cleaned_text = re.sub(r' \.', '. ', cleaned_text)
+    cleaned_text = re.sub(r'\s+', ' ', cleaned_text)
+    cleaned_text = re.sub(r'\.{2,}', '.', cleaned_text)
+
+    return cleaned_text
+
+def bert_inference(inference_numerical_tensor, inference_text, tokenizer=bert_tokenizer, model=bert_model):
+    inputs = tokenizer(inference_text, padding=True, truncation=True, return_tensors='tf', max_length=512)
+
+    input_dict = {
+        'input_ids': inputs['input_ids'],
+        'attention_mask': inputs['attention_mask'],
+        'numerical_feature': inference_numerical_tensor
+    }
+
+    predictions = model(input_dict)
+    predictions_np = predictions.numpy()
+
+    return predictions_np[0][0]
+
+def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model):
+    new_sequences = tokenizer.texts_to_sequences([inference_text])
+    inference_text = tf.keras.preprocessing.sequence.pad_sequences(new_sequences, maxlen=800, padding='post')
+
+    predictions = model.predict([inference_text, inference_numerical_tensor])
+
+    return float(predictions[0][0])
 
 @app.route('/data')
 def data():
@@ -68,29 +101,6 @@ def data():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-def bert_inference(inference_numerical_tensor, inference_text, tokenizer=bert_tokenizer, model=bert_model):
-    inputs = tokenizer(inference_text, padding=True, truncation=True, return_tensors='tf', max_length=512)
-
-    input_dict = {
-        'input_ids': inputs['input_ids'],
-        'attention_mask': inputs['attention_mask'],
-        'numerical_feature': inference_numerical_tensor
-    }
-
-    predictions = model(input_dict)
-    predictions_np = predictions.numpy()
-
-    return predictions_np[0][0]
-
-def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model):
-    new_sequences = tokenizer.texts_to_sequences([inference_text])
-    inference_text = tf.keras.preprocessing.sequence.pad_sequences(new_sequences, maxlen=800, padding='post')
-
-    predictions = model.predict([inference_text, inference_numerical_tensor])
-
-    return float(predictions[0][0])
-    
-
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
@@ -112,6 +122,8 @@ def predict():
         inference_numerical_tensor = tf.constant([[klasifikasi_perkara_encoded, penuntut_umum_encoded, hakim_encoded, jumlah_saksi]], dtype=tf.float32)
 
         text_data = ". ".join([barang_bukti, dakwaan])
+        text_data = clean_text(text_data)
+        
         bert_prediction = bert_inference(inference_numerical_tensor, text_data)
         lstm_prediction = lstm_inference(inference_numerical_tensor, text_data)
 
