@@ -1,0 +1,43 @@
+.history {
+    width: 15vw;
+    background-color: #202123;
+    color: #ECECF1;
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    height: 100vh;
+    transition: width 0.3s ease; /* Smooth transition when resizing */
+    position: fixed; /* Keep sidebar fixed on scroll */
+    right: 0; /* Stick to the right edge instead of left */
+    left: auto; /* Remove left positioning */
+    top: 0; /* Align to the top of the viewport */
+    overflow-y: auto; /* Allow scrolling within sidebar if content is too tall */
+    z-index: 1000; /* Ensure sidebar appears above other content */
+  }
+  
+  /* You may need this for your main content to prevent overlap */
+  .content-wrapper {
+    margin-right: 15vw; /* Same as history width */
+    transition: margin-right 0.3s ease; /* Match history transition */
+  }
+
+.history-header {
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Centers items horizontally */
+    margin-left: auto;
+    margin-right: auto; /* Auto margins on both sides for centering */
+    margin-top: 30px;
+    margin-bottom: 20px;
+    width: 100%; /* Ensure it takes full width of the history */
+  }
+  
+  .history-logo-1 {
+    height: 50px;
+    margin-right: 1vw; 
+  }
+
+  .history-title-1 {
+    font-size: 1.5em;
+    font-weight: bold;
+  }

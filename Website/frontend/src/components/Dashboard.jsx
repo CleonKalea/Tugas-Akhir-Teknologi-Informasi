@@ -44,44 +44,9 @@ const Dashboard = () => {
   return (
     <div className="base">
       <div>
-        <h2>Dashboard</h2>
-      </div>
-      
-      <div className='AnalyticCard'>
-        {analyticData.map((data, index) => (
-          <AnalyticCard key={index} title={data.title} value={data.value} image={data.image} />
-        ))}
+        <h2>Overview</h2>
       </div>
 
-        <div className="main-content">
-        </div>
-
-        <div className="summary-card-container">
-          <div className='SummaryTab'>
-            <h2>Price Rankings</h2>
-            <h3>Lowest to Highest (per 100m<sup>2</sup>)</h3>
-          </div>
-
-          <div className='SummaryTab'>
-            <h2>Average Price per 100m<sup>2</sup></h2>
-            <h3>For Each Regency </h3>
-          </div>
-
-          <div className='SummaryTab'>
-            <h2>Average Price per m<sup>2</sup></h2>
-            <h3>For Each Regency</h3>
-          </div>
-
-          <div className='SummaryTab'>
-            <h2>Average Price per m<sup>2</sup></h2>
-            <h3>For Each Regency</h3>
-          </div>
-          <div className='SummaryTab'>
-            <h2>Average Price per m<sup>2</sup></h2>
-            <h3>For Each Regency</h3>
-          </div>
-        </div>
-        
     </div>
   );
 };

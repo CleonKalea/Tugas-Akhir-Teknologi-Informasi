@@ -22,7 +22,7 @@ const PredictCardResult = ({ data }) => {
     return (
       <div className="predict-card-result-base">
         <div className="predict-card-result-header"> 
-            <h2>Predicted Land Prices</h2>
+            <h2>Prediction Results</h2>
         </div>
         <div className='predict-card-result-container'>
             <div className="predict-card-result-content">

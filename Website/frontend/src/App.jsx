@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar';
 import PricePrediction from './components/PricePrediction'; 
 import './App.css';
 import Dashboard from './components/Dashboard';
+import History from './components/History';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('prediction');
@@ -17,6 +18,7 @@ function App() {
         <Sidebar onPageChange={handlePageChange} />
         {currentPage === 'prediction' && <PricePrediction />}
         {currentPage === 'modelExplanation' && <Dashboard />}
+        <History />
       </div>
     </div>
   );

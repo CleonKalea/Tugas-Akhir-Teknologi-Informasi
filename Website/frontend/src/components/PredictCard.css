@@ -1,11 +1,8 @@
 .predict-card-base {
-    width: 80%;
+    width: 100%;
     height: max-content; 
     display: flex;
-
-    padding: 0px 50px;
-    padding-bottom: 0px;
-    background-color: #f9f9f9;
+    background-color: #202123  ;
     gap: 1em;
     border-radius: 15px;
 }
@@ -16,10 +13,11 @@
     display: flex;
     justify-content: center; 
     align-items: center;
+    color:#ECECF1;
   }
   
   .predict-card-content {
-    background-color: #4FD1C5;
+    background-color: #2A2B2E ;
     margin-top: 20px;
     padding: 20px 0px;
     display: flex;
@@ -28,7 +26,7 @@
     align-items: center;
     text-align: center;
     border-radius: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   }
   
   .predict-card-content-input h2 {
@@ -106,9 +104,9 @@
   
   .predict-button {
     width: 150px;
-    margin-top: 20px;
+    margin-top: 3vh;
     padding: 10px 20px;
-    background-color: #4FD1C5;
+    background-color: #2b5c94 ;
     border: none;
     border-radius: 5px;
     color: #f9f9f9;
@@ -119,19 +117,22 @@
     margin-left: auto;
     margin-right: auto;
     text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
   
   .predict-button:hover {
-    background-color: #38b2ac;
+    background-color: #40414F;
   }
 
   .predict-textbox {
     width: 100%;
     height: auto; /* Adjust height automatically */
     min-height: 10vw; /* Set a minimum height */
+    background-color: #2A2B2E;
+    color: #ECECF1;
     padding: 8px;
     margin-top: 5px;
-    border: 1px solid #ccc;
+    /* border: 1px solid #ccc; */
     border-radius: 5px;
     font-size: 16px;
     white-space: normal; /* Allow text wrapping */
@@ -139,7 +140,7 @@
     word-wrap: break-word; /* Legacy support */
     resize: vertical; /* Allow users to resize height */
 }
-
+  
 .predict-textbox-container{
     width: 100%;
     display: flex;
@@ -147,4 +148,14 @@
     align-items: center;
     justify-content: center;
     padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    margin-top: 2vh;
+}
+
+.predict-textbox-container h2{
+    font-weight: bold;
+    font-size: 1.2em;
+    color: #ECECF1;
+    margin-bottom: 10px;
 }

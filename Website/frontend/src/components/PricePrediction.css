@@ -1,14 +1,12 @@
-/* src/components/MainContent.css */
 .main-content {
-    width:80%;
+    width: 100%;
     height: max-content;
     display: flex;
     flex-direction: column;
     margin: 20px 0px;
     padding: 20px;
-    background-color: #f9f9f9;
+    background-color: #202123 ;
     border-radius: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .predict-main-content-container {
@@ -27,10 +25,12 @@
   }
 
 .base {
-    width: 80%;
+    width: 100%;
     margin: 35px 5px;
     padding: 20px;
-    background-color: #e8e8e9;
+    background-color: #202123 ;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     
   }
 
@@ -48,6 +48,5 @@
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-
     }
   

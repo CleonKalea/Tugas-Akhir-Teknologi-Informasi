@@ -53,14 +53,6 @@ const PricePrediction = () => {
 
   return (
     <div className="base">
-      <h2>Price Prediction</h2>
-
-      <div className='AnalyticCard'>
-        {analyticData.map((data, index) => (
-          <AnalyticCard key={index} title={data.title} value={data.value} image={data.image} />
-        ))}
-      </div>
-
       <div className='main-content'>
           <PredictCard onPredictionResult={handlePredictionResult} data={datas}/>
           {Object.keys(predictedPrices).length > 0 && <PredictCardResult data={predictedPrices} />}

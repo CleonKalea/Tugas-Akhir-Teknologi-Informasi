@@ -34,7 +34,7 @@ const Sidebar = ({ onPageChange }) => {
         <div className='sidebar-box-2'>
           <img src="https://img.icons8.com/windows/96/FFFFFF/total-sales--v1.png" className='sidebar-logo-2'/>
         </div>
-        <span className="sidebar-title-2">Model Explanation</span>
+        <span className="sidebar-title-2">Overview</span>
       </div>
     </div>
   );
