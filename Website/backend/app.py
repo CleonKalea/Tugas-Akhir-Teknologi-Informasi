@@ -168,6 +168,8 @@ def predict():
         jumlah_saksi = int(jumlah_saksi)
         maks_penjara_berdasarkan_pasal = int(maks_penjara_berdasarkan_pasal)
 
+        print(klasifikasi_perkara_encoded, penuntut_umum_encoded, hakim_encoded, jumlah_saksi, maks_penjara_berdasarkan_pasal)
+
         inference_numerical_tensor = tf.constant([[klasifikasi_perkara_encoded, penuntut_umum_encoded, hakim_encoded, jumlah_saksi, maks_penjara_berdasarkan_pasal]], dtype=tf.float32)
         text_data = ". ".join([terdakwa, dakwaan])
         text_data = clean_text(text_data)
@@ -181,6 +183,8 @@ def predict():
             "bert_prediction": float(bert_prediction),
             "lstm_prediction": lstm_prediction
         }
+
+        print(predictions)
 
         return jsonify(predictions)
 

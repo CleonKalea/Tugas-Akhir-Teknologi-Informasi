@@ -6,19 +6,28 @@ const PredictCard = ({ onPredictionResult, data }) => {
   const [selectedPenuntutUmum, setSelectedPenuntutUmum] = useState('');
   const [selectedKlasifikasiPerkara, setSelectedKlasifikasiPerkara] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [barangBukti, setBarangBukti] = useState('');
+  const [terdakwa, setTerdakwa] = useState('');
+  const [selectedPasal, setSelectedPasal] = useState('');
   const [dakwaan, setDakwaan] = useState('');
   const [jumlahSaksi, setJumlahSaksi] = useState('');
+  const [maxHukuman, setMaxHukuman] = useState(null);
+  
+  const handlePasalChange = (e) => {
+    const pasal = e.target.value;
+    setSelectedPasal(pasal);
+    setMaxHukuman(data.pasal_mapping[pasal]);
+  };
 
   const handleButtonClick = async () => {
     setIsLoading(true);
 
     const formData = {
-      hakim: selectedHakim,
-      penuntutUmum: selectedPenuntutUmum,
       klasifikasiPerkara: selectedKlasifikasiPerkara,
+      penuntutUmum: selectedPenuntutUmum,
+      hakim: selectedHakim,
       jumlahSaksi: jumlahSaksi,
-      barangBukti: barangBukti,
+      terdakwa: terdakwa,
+      pasal: maxHukuman,
       dakwaan: dakwaan,
     };
 
@@ -47,7 +56,7 @@ const PredictCard = ({ onPredictionResult, data }) => {
   return (
     <div>
       <div className="predict-card-header">
-        <h2>Predict Jail Time</h2>
+        <h2>Prediksi Lama Kurungan Penjara</h2>
       </div>
 
       <div className="predict-card-base">
@@ -117,14 +126,19 @@ const PredictCard = ({ onPredictionResult, data }) => {
             </div>
           </div>
         </div>
-        {/* Hakim Dropdown */}
+
+        {/* Pasal Dropdown */}
         <div className="predict-card-content">
           <div className='predict-card-content-input'>
             <h3>Pasal</h3>
             <div className="predict-card-content-input-dropdown">
-              <select value={selectedHakim} onChange={(e) => setSelectedHakim(e.target.value)}>
-                <option value="" disabled>Select an option</option>
-                
+              <select value={selectedPasal} onChange={handlePasalChange}>
+                <option value="" disabled>Pilih pasal</option>
+                {data?.pasal_mapping && Object.entries(data.pasal_mapping).map(([pasalName, hukuman], index) => (
+                  <option key={index} value={pasalName}>
+                    {pasalName}
+                  </option>
+                  ))}
               </select>
             </div>
           </div>
@@ -133,10 +147,10 @@ const PredictCard = ({ onPredictionResult, data }) => {
 
 
       <div className="predict-textbox-container">
-        <h2>Barang Bukti</h2>
+        <h2>Terdakwa</h2>
         <textarea
-          value={barangBukti}
-          onChange={(e) => setBarangBukti(e.target.value)}
+          value={terdakwa}
+          onChange={(e) => setTerdakwa(e.target.value)}
           placeholder="Type something..."
           className="predict-textbox"
         />
@@ -154,7 +168,7 @@ const PredictCard = ({ onPredictionResult, data }) => {
       </div>
 
       <button onClick={handleButtonClick} className="predict-button" disabled={isLoading}>
-        {isLoading ? 'Predicting...' : 'Predict'}
+        {isLoading ? 'Memprediksi...' : 'Prediksi'}
       </button>
     </div>
   );
