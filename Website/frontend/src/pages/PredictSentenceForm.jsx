@@ -15,6 +15,9 @@ import Tab from '@mui/material/Tab';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Autocomplete from '@mui/material/Autocomplete';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
+
 // Tema Dark dengan color palette baru
 const theme = createTheme({
   palette: {
@@ -538,6 +541,11 @@ const SentencePredictionForm = () => {
     dakwaan: ''
   });
 
+  const [validationAlert, setValidationAlert] = useState({
+    open: false,
+    message: ''
+  });
+
   // State untuk hasil prediksi
   const [prediction, setPrediction] = useState(null);
 
@@ -555,9 +563,51 @@ const SentencePredictionForm = () => {
     setActiveTab(newValue);
   };
 
-  // Handle submit form
+  // Close alert
+  const handleCloseAlert = () => {
+    setValidationAlert({
+      ...validationAlert,
+      open: false
+    });
+  };
+
+  // Validasi form
+  const validateForm = () => {
+    // Check required fields
+    const requiredFields = [
+      { name: 'klasifikasiPerkara', label: 'Klasifikasi Perkara' },
+      { name: 'namaHakim', label: 'Hakim' },
+      { name: 'namaPenuntutUmum', label: 'Penuntut Umum' },
+      { name: 'namaTerdakwa', label: 'Nama Terdakwa' },
+      { name: 'jumlahSaksi', label: 'Jumlah Saksi' },
+      { name: 'pasal', label: 'Pasal' },
+      { name: 'dakwaan', label: 'Dakwaan' }
+    ];
+    
+    // Check for empty fields
+    const emptyFields = requiredFields.filter(field => !formValues[field.name]);
+    
+    if (emptyFields.length > 0) {
+      // Get the names of empty fields
+      const emptyFieldNames = emptyFields.map(field => field.label).join(', ');
+      setValidationAlert({
+        open: true,
+        message: `Mohon isi data berikut: ${emptyFieldNames}`
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
+  // Handle submit form with validation
   const handleSubmit = () => {
-    // Simulasi hasil prediksi (dalam kasus nyata, ini akan memanggil API)
+    // Validate form fields
+    if (!validateForm()) {
+      return;
+    }
+    
+    // All fields are filled, proceed with prediction
     const randomMonths = Math.floor(Math.random() * 120) + 6; // 6 bulan hingga 10 tahun
     setPrediction(randomMonths);
     setActiveTab(1); // Pindah ke tab hasil
@@ -709,6 +759,8 @@ const SentencePredictionForm = () => {
             p: 0,
             overflow: 'hidden',
             backgroundColor: '#2d3250',
+            backgroundImage: 'radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.05) 1%, transparent 3%),radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.03) 1%, transparent 5%)',
+            backgroundSize: '50px 50px',
             backdropFilter: 'blur(20px)',
             transition: 'all 0.3s ease',
             '&:hover': {
@@ -817,7 +869,7 @@ const SentencePredictionForm = () => {
                       display: 'flex',
                       alignItems: 'center',
                       zIndex: 2,
-                      mt: -0.5,     // Menambahkan margin top (setara dengan margin-top: 32px)
+                      mt: 1,     // Menambahkan margin top (setara dengan margin-top: 32px)
                       // mb: 4,
                     }}
                   >
@@ -860,6 +912,7 @@ const SentencePredictionForm = () => {
                       variant="body2" 
                       color="text.secondary" 
                       sx={{ 
+                        mt: 1.5,
                         textAlign: 'center',
                         maxWidth: '90%',
                         mx: 'auto',
@@ -871,7 +924,7 @@ const SentencePredictionForm = () => {
                           bottom: '-12px',
                           left: '50%',
                           transform: 'translateX(-50%)',
-                          width: '60px',
+                          width: '150px',
                           height: '2px',
                           background: 'linear-gradient(90deg, transparent, rgba(249, 177, 122, 0.5), transparent)',
                           borderRadius: '2px',
@@ -887,7 +940,7 @@ const SentencePredictionForm = () => {
                           display: 'grid', 
                           gridTemplateColumns: 'repeat(2, 1fr)', 
                           gap: 2,
-                          // mb: 2
+                          mt: 2,
                         }}
                       >
                         {/* Klasifikasi Perkara */}
@@ -1173,6 +1226,31 @@ const SentencePredictionForm = () => {
           </Box>
         </Paper>
       </Container>
+      {/* Validation Alert Snackbar */}
+      <Snackbar 
+        open={validationAlert.open} 
+        autoHideDuration={6000} 
+        onClose={handleCloseAlert}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseAlert} 
+          severity="error" 
+          variant="filled"
+          sx={{ 
+            width: '100%',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+            backgroundColor: 'rgba(185, 27, 27, 0.9)',
+            backdropFilter: 'blur(10px)',
+            '& .MuiAlert-icon': {
+              color: '#ffffff'
+            },
+            fontWeight: 500
+          }}
+        >
+          {validationAlert.message}
+        </Alert>
+      </Snackbar>
     </ThemeProvider>
   );
 };
