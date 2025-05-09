@@ -1,9 +1,11 @@
 import React from 'react';
-import PredictSentenceForm from './components/PredictSentenceForm';
+import SentencePredictionForm from './components/forms/PredictSentenceForm';
 
 function App() {
   return (
-    <PredictSentenceForm />
+    <div className="App">
+      <SentencePredictionForm />
+    </div>
   );
 }
 
