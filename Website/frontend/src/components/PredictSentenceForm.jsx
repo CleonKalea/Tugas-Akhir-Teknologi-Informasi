@@ -17,6 +17,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Autocomplete from '@mui/material/Autocomplete';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
+import logoImage from '../assets/logo.png'; // Ganti dengan path logo Anda
 
 // Tema Dark dengan color palette baru
 const theme = createTheme({
@@ -649,14 +650,12 @@ const SentencePredictionForm = () => {
                   content: '""',
                   position: 'absolute',
                   bottom: -4,
-                  left: 0,
-                  width: '50%',
-                  height: '2px',
-                  background: 'linear-gradient(90deg, #f9b17a, transparent)',
+                  left: 50,
+                  top: 30,
+                  width: '70%',
+                  height: '1px',
+                  background: 'linear-gradient(300deg, #f9b17a, transparent)',
                   transition: 'width 0.3s ease',
-                },
-                '&:hover:after': {
-                  width: '100%',
                 }
               }}
             >
@@ -667,13 +666,18 @@ const SentencePredictionForm = () => {
                   width: 34, 
                   height: 34,
                   borderRadius: '50%',
-                  backgroundColor: '#424769',
+                  // backgroundColor: '#424769',
+                  border: '1px solid rgb(255, 255, 255)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                   position: 'relative',
                   overflow: 'hidden',
+                  backgroundImage: `url(${logoImage})`,
+                  backgroundSize: '28px',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
                   '&:after': {
                     content: '""',
                     position: 'absolute',
@@ -685,9 +689,7 @@ const SentencePredictionForm = () => {
                     opacity: 0.6
                   }
                 }}
-              >
-                <span style={{ color: '#fff', fontSize: '18px', fontWeight: 'bold' }}>⚖</span>
-              </Box>
+              />
               INDICTMENT
             </Typography>
           </Box>
@@ -707,6 +709,7 @@ const SentencePredictionForm = () => {
           sx={{ 
             textAlign: 'center', 
             mb: 5,
+            mt: 5,
             position: 'relative',
             '&:after': {
               content: '""',
@@ -715,7 +718,7 @@ const SentencePredictionForm = () => {
               left: '50%',
               transform: 'translateX(-50%)',
               width: '150px',
-              height: '4px',
+              height: '2px',
               background: 'linear-gradient(90deg, transparent, rgba(249, 177, 122, 0.5), transparent)',
               borderRadius: '4px',
             }
@@ -731,7 +734,6 @@ const SentencePredictionForm = () => {
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               textFillColor: 'transparent',
-              mb: 1,
               display: 'inline-block',
               position: 'relative',
             }}
@@ -765,7 +767,6 @@ const SentencePredictionForm = () => {
             transition: 'all 0.3s ease',
             '&:hover': {
               boxShadow: '0 15px 50px rgba(0, 0, 0, 0.3)',
-              transform: 'translateY(-5px)',
             },
             border: '1px solid rgba(255, 255, 255, 0.05)',
           }}
@@ -1187,10 +1188,10 @@ const SentencePredictionForm = () => {
                   }}
                 >
                   <Typography variant="body1" component="div" color="text.secondary" gutterBottom>
-                    Estimasi Lama Hukuman:
+                    Estimasi Lama Hukuman
                   </Typography>
                   <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: '#f9b17a' }}>
-                    {Math.floor(prediction / 12)} Tahun {prediction % 12} Bulan
+                    {Math.floor(prediction / 12)} Tahun {prediction % 12} Bulan 15 Hari
                   </Typography>
                 </Box>
                 
