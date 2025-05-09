@@ -6,19 +6,6 @@
 }
 
 body, html, #root {
-  /* height: 100%; */
-  margin: 0;
+  height: 100%; 
   background-color: #2A2B2E ;
-}
-
-.App {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.dashboard {
-  display: flex;
-  flex: 1;
-  height: 100%;
 }
