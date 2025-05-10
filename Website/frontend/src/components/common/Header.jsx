@@ -28,7 +28,6 @@ const Header = ({ logoImage }) => {
             variant="h6" 
             component="div" 
             sx={{ 
-              fontWeight: 'bold', 
               display: 'flex',
               alignItems: 'center',
               color: '#fff',
@@ -37,8 +36,8 @@ const Header = ({ logoImage }) => {
                 content: '""',
                 position: 'absolute',
                 bottom: -4,
-                left: 50,
-                top: 30,
+                left: 90,
+                top: 33,
                 width: '70%',
                 height: '1px',
                 background: 'linear-gradient(300deg, #f9b17a, transparent)',
@@ -76,7 +75,32 @@ const Header = ({ logoImage }) => {
                 }
               }}
             />
-            Hive Lab | Incarceration
+            <Box component="span" sx={{ 
+              display: 'flex',
+              alignItems: 'center'
+            }}>
+              <Typography 
+                component="span" 
+                sx={{ 
+                  fontWeight: 700, // Bold
+                  fontSize: 'inherit',
+                  letterSpacing: '0.5px',
+                }}
+              >
+                Hive Lab
+              </Typography>
+              <Typography 
+                component="span" 
+                sx={{ 
+                  fontWeight: 300, // Regular
+                  fontSize: 'inherit',
+                  ml: 1, // Margin left
+                  opacity: 0.9,
+                }}
+              >
+                | Incarceration
+              </Typography>
+            </Box>
           </Typography>
         </Box>
       </Container>

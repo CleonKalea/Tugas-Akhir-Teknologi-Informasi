@@ -1,16 +1,32 @@
 import React from 'react';
-import { Box, TextField, Button, Autocomplete } from '@mui/material';
+import { Box, TextField, Button, Autocomplete, CircularProgress } from '@mui/material';
 import PropTypes from 'prop-types';
-import { 
-  KLASIFIKASI_PERKARA, 
-  NAMA_HAKIM, 
-  NAMA_PENUNTUT_UMUM, 
-  NAMA_TERDAKWA,
-  PASAL 
-} from '../../../constants/formData';
 import FormHeader from './FormHeader';
 
-const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteChange }) => {
+const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteChange, backendData, isLoading }) => {
+ 
+  // Ekstrak data dari backend
+  const klasifikasiOptions = backendData ? 
+    Object.entries(backendData.klasifikasi_perkara_mapping).map(([name, id]) => ({ 
+      name, 
+      id 
+    })) : [];
+  const hakimOptions = backendData ? 
+    Object.entries(backendData.hakim_mapping).map(([name, id]) => ({ 
+      name, 
+      id 
+    })) : [];
+  const penuntutOptions = backendData ? 
+    Object.entries(backendData.penuntut_umum_mapping).map(([name, id]) => ({ 
+      name, 
+      id 
+    })) : [];
+  // Untuk pasal, kita perlu objek dengan nama pasal dan nilai maksimal hukuman
+  const pasalOptions = backendData ? 
+    Object.entries(backendData.pasal_mapping).map(([name, maxHukuman]) => ({ 
+      name, 
+      maxHukuman 
+    })) : [];
   return (
     <Box
       sx={{
@@ -35,9 +51,29 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
             {/* Klasifikasi Perkara */}
             <Autocomplete
               fullWidth
-              options={KLASIFIKASI_PERKARA}
-              value={formValues.klasifikasiPerkara || null}
-              onChange={(event, newValue) => handleAutocompleteChange('klasifikasiPerkara', newValue)}
+              options={klasifikasiOptions}
+              getOptionLabel={(option) => {
+                // Handle berbagai format input
+                if (typeof option === 'string') return option;
+                if (option && option.name) return option.name;
+                return '';
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (value === null) return false;
+                if (typeof value === 'string') return option.name === value || option.id === value;
+                return option.id === value.id || option.id === value;
+              }}
+              value={formValues.klasifikasiPerkara ? 
+                klasifikasiOptions.find(option => 
+                  option.id === formValues.klasifikasiPerkara || 
+                  option.name === formValues.klasifikasiPerkara
+                ) || null : null}
+              onChange={(event, newValue) => {
+                const valueToStore = newValue ? 
+                  (typeof newValue === 'object' ? newValue.id : newValue) : 
+                  '';
+                handleAutocompleteChange('klasifikasiPerkara', valueToStore);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -61,9 +97,28 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
             {/* Penuntut Umum */}
             <Autocomplete
               fullWidth
-              options={NAMA_PENUNTUT_UMUM}
-              value={formValues.namaPenuntutUmum || null}
-              onChange={(event, newValue) => handleAutocompleteChange('namaPenuntutUmum', newValue)}
+              options={penuntutOptions}
+              getOptionLabel={(option) => {
+                if (typeof option === 'string') return option;
+                if (option && option.name) return option.name;
+                return '';
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (value === null) return false;
+                if (typeof value === 'string') return option.name === value || option.id === value;
+                return option.id === value.id || option.id === value;
+              }}
+              value={formValues.namaPenuntutUmum ? 
+                penuntutOptions.find(option => 
+                  option.id === formValues.namaPenuntutUmum || 
+                  option.name === formValues.namaPenuntutUmum
+                ) || null : null}
+              onChange={(event, newValue) => {
+                const valueToStore = newValue ? 
+                  (typeof newValue === 'object' ? newValue.id : newValue) : 
+                  '';
+                handleAutocompleteChange('namaPenuntutUmum', valueToStore);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -85,27 +140,20 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
             />
 
             {/* Nama Terdakwa */}
-            <Autocomplete
+            <TextField
               fullWidth
-              options={NAMA_TERDAKWA}
-              value={formValues.namaTerdakwa || null}
-              onChange={(event, newValue) => handleAutocompleteChange('namaTerdakwa', newValue)}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Nama Terdakwa"
-                  name="namaTerdakwa"
-                  sx={{ 
-                    '& .MuiInputBase-root': {
-                      height: 56,
-                      backgroundColor: 'background.dropdown'
-                    }
-                  }}
-                />
-              )}
-              sx={{
-                '& .MuiAutocomplete-endAdornment': {
-                  right: 8
+              label="Nama Terdakwa"
+              name="namaTerdakwa"
+              value={formValues.namaTerdakwa}
+              onChange={handleChange}
+              InputProps={{
+                style: {
+                  height: 56
+                }
+              }}
+              sx={{ 
+                '& .MuiInputBase-root': {
+                  backgroundColor: 'background.dropdown'
                 }
               }}
             />
@@ -113,9 +161,29 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
             {/* Hakim */}
             <Autocomplete
               fullWidth
-              options={NAMA_HAKIM}
-              value={formValues.namaHakim || null}
-              onChange={(event, newValue) => handleAutocompleteChange('namaHakim', newValue)}
+              options={hakimOptions}
+              getOptionLabel={(option) => {
+                if (typeof option === 'string') return option;
+                if (option && option.name) return option.name;
+                return '';
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (value === null) return false;
+                if (typeof value === 'string') return option.name === value || option.id === value;
+                return option.id === value.id || option.id === value;
+              }}
+              value={formValues.namaHakim ? 
+                hakimOptions.find(option => 
+                  option.id === formValues.namaHakim || 
+                  option.name === formValues.namaHakim
+                ) || null : null}
+              onChange={(event, newValue) => {
+
+                const valueToStore = newValue ? 
+                  (typeof newValue === 'object' ? newValue.id : newValue) : 
+                  '';
+                handleAutocompleteChange('namaHakim', valueToStore);
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -140,7 +208,7 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
           <Box 
             sx={{ 
               display: 'grid', 
-              gridTemplateColumns: '1fr 7fr', 
+              gridTemplateColumns: '1fr 5fr', 
               gap: 2
             }}
           >
@@ -151,7 +219,21 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
               name="jumlahSaksi"
               type="number"
               value={formValues.jumlahSaksi}
-              onChange={handleChange}
+              onChange={(e) => {
+                // Pastikan nilai tidak negatif
+                const value = Math.max(0, parseInt(e.target.value) || 0);
+                // Update form dengan nilai yang sudah divalidasi
+                handleChange({
+                  target: {
+                    name: 'jumlahSaksi',
+                    value: value.toString()
+                  }
+                });
+              }}
+              inputProps={{ 
+                min: 0,  // Input HTML min attribute
+                step: 1  // Hanya izinkan bilangan bulat
+              }}
               InputProps={{
                 style: {
                   height: 56
@@ -160,6 +242,14 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
               sx={{ 
                 '& .MuiInputBase-root': {
                   backgroundColor: 'background.dropdown'
+                },
+                // Menyembunyikan tombol up/down spinner dengan camelCase yang benar
+                '& input[type=number]::-webkit-inner-spin-button, & input[type=number]::-webkit-outer-spin-button': {
+                  WebkitAppearance: 'none',
+                  margin: 0
+                },
+                '& input[type=number]': {
+                  MozAppearance: 'textfield' // Firefox
                 }
               }}
             />
@@ -167,9 +257,30 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
             {/* Pasal - Wider */}
             <Autocomplete
               fullWidth
-              options={PASAL}
-              value={formValues.pasal || null}
-              onChange={(event, newValue) => handleAutocompleteChange('pasal', newValue)}
+              options={pasalOptions}
+              getOptionLabel={(option) => {
+                if (typeof option === 'string') return option;
+                if (option && option.name) return option.name;
+                return '';
+              }}
+              isOptionEqualToValue={(option, value) => {
+                if (value === null) return false;
+                if (typeof value === 'string') return option.name === value;
+                return option.name === value.name;
+              }}
+              value={formValues.pasal ? 
+                pasalOptions.find(option => option.name === formValues.pasal) || null : null}
+              onChange={(event, newValue) => {
+                // console.log("Pasal baru dipilih:", newValue);
+                // Menyimpan nama pasal sebagai nilainya
+                handleAutocompleteChange('pasal', newValue ? newValue.name : '');
+                
+                // Meneruskan nilai maksimal hukuman ke parent component
+                if (newValue && newValue.maxHukuman) {
+                  // Ini akan mengatur maxHukuman di PredictSentenceForm.jsx
+                  handleAutocompleteChange('maxHukuman', newValue.maxHukuman);
+                }
+              }}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -225,9 +336,18 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
 
 DataForm.propTypes = {
   formValues: PropTypes.shape({
-    klasifikasiPerkara: PropTypes.string,
-    namaHakim: PropTypes.string,
-    namaPenuntutUmum: PropTypes.string,
+    klasifikasiPerkara: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number
+    ]),
+    namaHakim: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number
+    ]),
+    namaPenuntutUmum: PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.number
+    ]),
     namaTerdakwa: PropTypes.string,
     jumlahSaksi: PropTypes.string,
     pasal: PropTypes.string,
@@ -235,7 +355,9 @@ DataForm.propTypes = {
   }).isRequired,
   handleChange: PropTypes.func.isRequired,
   handleSubmit: PropTypes.func.isRequired,
-  handleAutocompleteChange: PropTypes.func.isRequired
+  handleAutocompleteChange: PropTypes.func.isRequired,
+  backendData: PropTypes.object,
+  isLoading: PropTypes.bool
 };
 
 export default DataForm;

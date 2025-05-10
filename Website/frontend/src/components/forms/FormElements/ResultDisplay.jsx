@@ -3,6 +3,35 @@ import { Box, Typography, Button } from '@mui/material';
 import PropTypes from 'prop-types';
 
 const ResultDisplay = ({ prediction, onBack }) => {
+  // Fungsi untuk mengkonversi prediction ke format yang sesuai
+  const formatPrediction = (value) => {
+    // Jika prediction berupa object dengan property prediction
+    if (typeof value === 'object' && value !== null && 'prediction' in value) {
+      value = value.prediction;
+    }
+    
+    // Konversi ke number untuk memastikan
+    const numValue = Number(value);
+    
+    // Jika masih bukan number yang valid, tampilkan pesan error
+    if (isNaN(numValue)) {
+      console.error("Prediction bukan angka valid:", value);
+      return "Data tidak valid";
+    }
+    
+    // Perhitungan tahun dan bulan
+    const tahun = Math.floor(numValue / 12);
+    const bulan = Math.floor(numValue - tahun * 12)
+    const hari = Math.round((numValue - Math.floor(numValue)) * 30)
+    
+    // Handle kasus khusus jika bulan = 12 setelah pembulatan
+    if (bulan === 12) {
+      return `${tahun + 1} Tahun 0 Bulan`;
+    }
+    
+    return `${tahun} Tahun ${bulan} Bulan ${hari} Hari`;
+  };
+
   return (
     <Box sx={{ 
       p: 4, 
@@ -30,17 +59,17 @@ const ResultDisplay = ({ prediction, onBack }) => {
         }}
       >
         <Typography variant="body1" component="div" color="text.secondary" gutterBottom>
-          Estimasi Lama Hukuman
+          Estimasi Lama Hukuman Penjara
         </Typography>
         <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: '#f9b17a' }}>
-          {Math.floor(prediction / 12)} Tahun {prediction % 12} Bulan 15 Hari
+          {formatPrediction(prediction)}
         </Typography>
       </Box>
       
       <Box sx={{ mt: 4 }}>
         <Typography variant="body2" color="text.secondary">
           Hasil prediksi ini didasarkan pada analisis dari berbagai kasus serupa
-          dengan tingkat akurasi 85%. Hasil aktual dapat berbeda tergantung
+          dengan tingkat akurasi --------%. Hasil aktual dapat berbeda tergantung
           berbagai faktor yang dipertimbangkan oleh hakim.
         </Typography>
         <Box sx={{ mt: 4 }}>
@@ -67,7 +96,11 @@ const ResultDisplay = ({ prediction, onBack }) => {
 };
 
 ResultDisplay.propTypes = {
-  prediction: PropTypes.number.isRequired,
+  prediction: PropTypes.oneOfType([
+    PropTypes.number,
+    PropTypes.object,
+    PropTypes.string
+  ]).isRequired,
   onBack: PropTypes.func.isRequired
 };
 

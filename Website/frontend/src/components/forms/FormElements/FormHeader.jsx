@@ -80,7 +80,7 @@ const FormHeader = () => {
           }
         }}
       >
-        Lengkapi data kasus untuk melihat estimasi hukuman penjara. Hasil prediksi menggunakan model Deep Learning.
+        Lengkapi data kasus untuk mendapatkan estimasi hukuman penjara. Hasil prediksi diperoleh menggunakan model Deep Learning.
       </Typography>
     </>
   );

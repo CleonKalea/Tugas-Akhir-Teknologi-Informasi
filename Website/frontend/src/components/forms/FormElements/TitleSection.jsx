@@ -36,7 +36,7 @@ const TitleSection = () => {
           position: 'relative',
         }}
       >
-        Prediksi Hukuman Penjara Berdasarkan Dakwaan
+        Prediksi Lama Hukuman Penjara Berdasarkan Dakwaan
       </Typography>
       <Typography 
         variant="body1" 
@@ -49,7 +49,7 @@ const TitleSection = () => {
           opacity: 0.85
         }}
       >
-        Berbasis Natural Language Processing dan Deep Learning
+        Menggunakan Metode Natural Language Processing dan Deep Learning.
       </Typography>
     </Box>
   );
