@@ -61,7 +61,7 @@ def init_bert():
             combined_output = tf.concat([pooled_output, numerical_features], axis=1)
             return self.regressor(combined_output)
     
-    bert_model_scenario_name = "indolem_indobert-base-uncased_FineTuning_TransferLearning_LogTransform_TargetOnly"
+    bert_model_scenario_name = "indolem_indobert-base-uncased_TransferLearning"
     bert_model_save_path = f'Model/{bert_model_scenario_name}'
     bert_model = tf.keras.models.load_model(bert_model_save_path, custom_objects={'BERTRegressor': BERTRegressor})
     return bert_model, bert_tokenizer
@@ -78,7 +78,7 @@ def init_lstm():
     lstm_model_scenario_name = "LSTM_12"
     lstm_model_save_path = f'Model/{lstm_model_scenario_name}'
     tokenizer_save_path = f'Model/{lstm_model_scenario_name}_tokenizer.pkl'
-    lstm_max_len = 1600
+    lstm_max_len = 1024
     
     # Load model dengan optimasi
     lstm_model = tf.keras.models.load_model(lstm_model_save_path, compile=False)
