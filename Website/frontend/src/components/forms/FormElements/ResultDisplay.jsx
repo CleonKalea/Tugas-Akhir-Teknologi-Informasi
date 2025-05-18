@@ -96,7 +96,7 @@ const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => 
           Hasil prediksi ini diperoleh menggunakan model Bidirectional-LSTM yang telah dilatih dengan data perkara asli sebelumnya. 
           Model mencapai Mean Absolute Error (MAE) sebesar 5,49 bulan, yang berarti rata-rata selisih antara hasil 
           prediksi dan putusan aktual berada di kisaran ±5,5 bulan. Perlu diingat bahwa putusan akhir tetap dapat 
-          berbeda, karena dipengaruhi oleh pertimbangan Ketua Majelis Hakim serta berbagai faktor yuridis dan non-yuridis yang relevan.
+          berbeda, karena dipengaruhi oleh pertimbangan Majelis Hakim serta berbagai faktor yuridis dan non-yuridis yang relevan.
         </Typography>
         <Box sx={{ mt: 4 }}>
           <Button 

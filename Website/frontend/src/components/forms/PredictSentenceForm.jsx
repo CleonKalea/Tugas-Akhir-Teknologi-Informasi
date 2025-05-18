@@ -167,9 +167,9 @@ const SentencePredictionForm = () => {
     
     // Format data untuk backend
     const predictionData = {
-      klasifikasiPerkara: formValues.klasifikasiPerkara, // ID sudah tersimpan langsung
-      penuntutUmum: formValues.namaPenuntutUmum, // ID sudah tersimpan langsung
-      hakim: formValues.namaHakim, // ID sudah tersimpan langsung
+      klasifikasiPerkara: formValues.klasifikasiPerkara.id, // ID sudah tersimpan langsung
+      penuntutUmum: formValues.namaPenuntutUmum.id, // ID sudah tersimpan langsung
+      hakim: formValues.namaHakim.id, // ID sudah tersimpan langsung
       jumlahSaksi: formValues.jumlahSaksi,
       terdakwa: formValues.namaTerdakwa,
       pasal: maxHukuman, // Nilai maksimal hukuman untuk pasal yang dipilih

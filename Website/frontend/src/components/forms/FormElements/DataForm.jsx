@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, TextField, Button, Autocomplete, CircularProgress } from '@mui/material';
 import PropTypes from 'prop-types';
 import FormHeader from './FormHeader';
@@ -12,25 +12,57 @@ const DataForm = ({
   backendData, 
   isLoading 
 }) => {
+  // Local state to handle problematic values
+  const [localFormValues, setLocalFormValues] = useState(formValues);
+  
+  // Update local state when formValues changes from parent
+  useEffect(() => {
+    setLocalFormValues(formValues);
+  }, [formValues]);
  
   // Ekstrak data dari backend
   const klasifikasiOptions = backendData ? 
     Object.entries(backendData.klasifikasi_perkara_mapping).map(([name, id]) => ({ 
       name, 
-      id 
+      id: Number(id)
     })) : [];
   const hakimOptions = backendData ? 
     Object.entries(backendData.hakim_mapping).map(([name, id]) => ({ 
       name, 
-      id 
+      id: Number(id)
     })) : [];
   const penuntutOptions = backendData ? 
     Object.entries(backendData.penuntut_umum_mapping).map(([name, id]) => ({ 
       name, 
-      id 
+      id: Number(id)
     })) : [];
-
-    console.log('Current formValues.klasifikasiPerkara:', formValues.klasifikasiPerkara);
+  
+  // Custom handler for autocomplete changes
+  const handleAutocompleteChangeLocal = (fieldName, value, displayName) => {
+    // console.log(`Local handler - ${fieldName}:`, value, displayName);
+    
+    // Update local state immediately
+    setLocalFormValues(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    
+    // Also update display names if provided
+    if (displayName !== undefined) {
+      setLocalFormValues(prev => ({
+        ...prev,
+        [`${fieldName}DisplayName`]: displayName
+      }));
+    }
+    
+    // Call the parent handler
+    try {
+      handleAutocompleteChange(fieldName, value, displayName);
+    } catch (error) {
+      console.error('Error calling parent handleAutocompleteChange:', error);
+    }
+  };
+  
   // Untuk pasal, kita perlu objek dengan nama pasal dan nilai maksimal hukuman
   const pasalOptions = backendData ? 
     Object.entries(backendData.pasal_mapping).map(([name, maxHukuman]) => ({ 
@@ -63,30 +95,18 @@ const DataForm = ({
             <Autocomplete
               fullWidth
               options={klasifikasiOptions}
-              getOptionLabel={(option) => {
-                // Handle berbagai format input
-                if (typeof option === 'string') return option;
-                if (option && option.name) return option.name;
-                return '';
-              }}
+              getOptionLabel={(option) => option?.name || ''}
               isOptionEqualToValue={(option, value) => {
-                if (value === null) return false;
-                if (typeof value === 'string') return option.name === value || option.id === value;
-                return option.id === value.id || option.id === value;
+                return option.id === value.id
               }}
-              value={formValues.klasifikasiPerkara ? 
-                klasifikasiOptions.find(option => 
-                  option.id === formValues.klasifikasiPerkara || 
-                  option.name === formValues.klasifikasiPerkara
-                ) || null : null}
+              value={localFormValues.klasifikasiPerkara}
               onChange={(event, newValue) => {
-                const valueToStore = newValue ? 
-                  (typeof newValue === 'object' ? newValue.id : newValue) : 
-                  '';
-                const displayName = newValue ? 
-                  (typeof newValue === 'object' ? newValue.name : newValue) : 
-                  '';
-                handleAutocompleteChange('klasifikasiPerkara', valueToStore, displayName);
+                // console.log('Klasifikasi onChange - newValue:', newValue);
+                if (newValue) {
+                  handleAutocompleteChangeLocal('klasifikasiPerkara', newValue, newValue?.name);
+                } else {
+                  handleAutocompleteChangeLocal('klasifikasiPerkara', '', '');
+                }
               }}
               renderInput={(params) => (
                 <TextField
@@ -108,33 +128,23 @@ const DataForm = ({
               }}
               disabled={isLoading}
             />
+            
             {/* Penuntut Umum */}
             <Autocomplete
               fullWidth
               options={penuntutOptions}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') return option;
-                if (option && option.name) return option.name;
-                return '';
-              }}
+              getOptionLabel={(option) => option?.name || ''}
               isOptionEqualToValue={(option, value) => {
-                if (value === null) return false;
-                if (typeof value === 'string') return option.name === value || option.id === value;
-                return option.id === value.id || option.id === value;
+                return option.id === value.id
               }}
-              value={formValues.namaPenuntutUmum ? 
-                penuntutOptions.find(option => 
-                  option.id === formValues.namaPenuntutUmum || 
-                  option.name === formValues.namaPenuntutUmum
-                ) || null : null}
+              value={localFormValues.namaPenuntutUmum} 
               onChange={(event, newValue) => {
-                const valueToStore = newValue ? 
-                  (typeof newValue === 'object' ? newValue.id : newValue) : 
-                  '';
-                const displayName = newValue ? 
-                  (typeof newValue === 'object' ? newValue.name : newValue) : 
-                  '';
-                handleAutocompleteChange('namaPenuntutUmum', valueToStore, displayName);
+                // console.log('Penuntut onChange - newValue:', newValue);
+                if (newValue) {
+                  handleAutocompleteChangeLocal('namaPenuntutUmum', newValue, newValue?.name);
+                } else {
+                  handleAutocompleteChangeLocal('namaPenuntutUmum', '', '');
+                }
               }}
               renderInput={(params) => (
                 <TextField
@@ -156,13 +166,20 @@ const DataForm = ({
               }}
               disabled={isLoading}
             />
+            
             {/* Nama Terdakwa */}
             <TextField
               fullWidth
               label="Nama Terdakwa"
               name="namaTerdakwa"
-              value={formValues.namaTerdakwa}
-              onChange={handleChange}
+              value={localFormValues.namaTerdakwa || ''}
+              onChange={(e) => {
+                setLocalFormValues(prev => ({
+                  ...prev,
+                  namaTerdakwa: e.target.value
+                }));
+                handleChange(e);
+              }}
               InputProps={{
                 style: {
                   height: 56
@@ -175,33 +192,23 @@ const DataForm = ({
               }}
               disabled={isLoading}
             />
+            
             {/* Hakim */}
             <Autocomplete
               fullWidth
               options={hakimOptions}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') return option;
-                if (option && option.name) return option.name;
-                return '';
-              }}
+              getOptionLabel={(option) => option?.name || ''}
               isOptionEqualToValue={(option, value) => {
-                if (value === null) return false;
-                if (typeof value === 'string') return option.name === value || option.id === value;
-                return option.id === value.id || option.id === value;
+                return option.id === value.id
               }}
-              value={formValues.namaHakim ? 
-                hakimOptions.find(option => 
-                  option.id === formValues.namaHakim || 
-                  option.name === formValues.namaHakim
-                ) || null : null}
+              value={localFormValues.namaHakim} 
               onChange={(event, newValue) => {
-                const valueToStore = newValue ? 
-                  (typeof newValue === 'object' ? newValue.id : newValue) : 
-                  '';
-                const displayName = newValue ? 
-                  (typeof newValue === 'object' ? newValue.name : newValue) : 
-                  '';
-                handleAutocompleteChange('namaHakim', valueToStore, displayName);
+                // console.log('Hakim onChange - newValue:', newValue);
+                if (newValue) {
+                  handleAutocompleteChangeLocal('namaHakim', newValue, newValue?.name);
+                } else {
+                  handleAutocompleteChangeLocal('namaHakim', '', '');
+                }
               }}
               renderInput={(params) => (
                 <TextField
@@ -237,17 +244,25 @@ const DataForm = ({
               label="Jumlah Saksi"
               name="jumlahSaksi"
               type="number"
-              value={formValues.jumlahSaksi}
+              value={localFormValues.jumlahSaksi || ''}
               onChange={(e) => {
                 // Pastikan nilai tidak negatif
                 const value = Math.max(0, parseInt(e.target.value) || 0);
-                // Update form dengan nilai yang sudah divalidasi
-                handleChange({
+                const event = {
                   target: {
                     name: 'jumlahSaksi',
                     value: value.toString()
                   }
-                });
+                };
+                
+                // Update local state
+                setLocalFormValues(prev => ({
+                  ...prev,
+                  jumlahSaksi: value.toString()
+                }));
+                
+                // Update form dengan nilai yang sudah divalidasi
+                handleChange(event);
               }}
               inputProps={{ 
                 min: 0,  // Input HTML min attribute
@@ -278,25 +293,27 @@ const DataForm = ({
             <Autocomplete
               fullWidth
               options={pasalOptions}
-              getOptionLabel={(option) => {
-                if (typeof option === 'string') return option;
-                if (option && option.name) return option.name;
-                return '';
-              }}
+              getOptionLabel={(option) => option?.name || ''}
               isOptionEqualToValue={(option, value) => {
-                if (value === null) return false;
-                if (typeof value === 'string') return option.name === value;
+                if (!option || !value) return false;
                 return option.name === value.name;
               }}
-              value={formValues.pasal ? 
-                pasalOptions.find(option => option.name === formValues.pasal) || null : null}
+              value={localFormValues.pasal ? 
+                pasalOptions.find(option => option.name === localFormValues.pasal) || null : null}
               onChange={(event, newValue) => {
                 // Menyimpan nama pasal sebagai nilainya
                 const pasalName = newValue ? newValue.name : '';
+                
+                // Update local state
+                setLocalFormValues(prev => ({
+                  ...prev,
+                  pasal: pasalName
+                }));
+                
                 handleAutocompleteChange('pasal', pasalName, pasalName);
                 
                 // Meneruskan nilai maksimal hukuman ke parent component
-                if (newValue && newValue.maxHukuman) {
+                if (newValue && newValue.maxHukuman !== null && newValue.maxHukuman !== undefined) {
                   // Ini akan mengatur maxHukuman di PredictSentenceForm.jsx
                   handleAutocompleteChange('maxHukuman', newValue.maxHukuman);
                 }
@@ -328,8 +345,14 @@ const DataForm = ({
             name="dakwaan"
             multiline
             rows={10}
-            value={formValues.dakwaan}
-            onChange={handleChange}
+            value={localFormValues.dakwaan || ''}
+            onChange={(e) => {
+              setLocalFormValues(prev => ({
+                ...prev,
+                dakwaan: e.target.value
+              }));
+              handleChange(e);
+            }}
             sx={{ 
               '& .MuiOutlinedInput-root': {
                 padding: '14px 14px',
@@ -376,17 +399,32 @@ const DataForm = ({
 DataForm.propTypes = {
   formValues: PropTypes.shape({
     klasifikasiPerkara: PropTypes.oneOfType([
+      PropTypes.number,
       PropTypes.string,
-      PropTypes.number
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired
+      })
     ]),
+
     namaHakim: PropTypes.oneOfType([
+      PropTypes.number,
       PropTypes.string,
-      PropTypes.number
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired
+      })
     ]),
+
     namaPenuntutUmum: PropTypes.oneOfType([
+      PropTypes.number,
       PropTypes.string,
-      PropTypes.number
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired
+      })
     ]),
+    
     namaTerdakwa: PropTypes.string,
     jumlahSaksi: PropTypes.string,
     pasal: PropTypes.string,
