@@ -86,7 +86,7 @@ const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => 
       <Box sx={{ mt: 4 }}>
         <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
           Prediksi ini menyangkut Terdakwa {formDisplayNames.namaTerdakwa} dalam 
-          perkara {formDisplayNames.klasifikasiPerkara}. Tuntutan diajukan oleh 
+          tindak pidana perkara {formDisplayNames.klasifikasiPerkara}. Tuntutan diajukan oleh 
           Penuntut Umum {formDisplayNames.namaPenuntutUmum}, dengan 
           dasar {formDisplayNames.pasal} dan menghadirkan {formDisplayNames.jumlahSaksi} orang saksi, 
           serta diperiksa dan diadili oleh {formDisplayNames.namaHakim} selaku Ketua Majelis Hakim.
