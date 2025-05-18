@@ -41,30 +41,30 @@ def load_mapping_files():
         logger.error(f"Error loading mapping files: {str(e)}")
         raise
 
-def init_bert():
-    bert_tokenizer = AutoTokenizer.from_pretrained("indolem/indobert-base-uncased")
+# def init_bert():
+#     bert_tokenizer = AutoTokenizer.from_pretrained("indolem/indobert-base-uncased")
     
-    class BERTRegressor(tf.keras.Model):
-        def __init__(self):
-            super(BERTRegressor, self).__init__()
-            self.bert = TFBertModel.from_pretrained("indolem/indobert-base-uncased", from_pt=True)
-            for layer in self.bert.layers:
-                layer.trainable = False
-            self.regressor = tf.keras.layers.Dense(1)
+#     class BERTRegressor(tf.keras.Model):
+#         def __init__(self):
+#             super(BERTRegressor, self).__init__()
+#             self.bert = TFBertModel.from_pretrained("indolem/indobert-base-uncased", from_pt=True)
+#             for layer in self.bert.layers:
+#                 layer.trainable = False
+#             self.regressor = tf.keras.layers.Dense(1)
         
-        def call(self, inputs):
-            input_ids = inputs['input_ids']
-            attention_mask = inputs['attention_mask']
-            numerical_features = inputs['numerical_feature']
-            bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-            pooled_output = bert_output.pooler_output
-            combined_output = tf.concat([pooled_output, numerical_features], axis=1)
-            return self.regressor(combined_output)
+#         def call(self, inputs):
+#             input_ids = inputs['input_ids']
+#             attention_mask = inputs['attention_mask']
+#             numerical_features = inputs['numerical_feature']
+#             bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
+#             pooled_output = bert_output.pooler_output
+#             combined_output = tf.concat([pooled_output, numerical_features], axis=1)
+#             return self.regressor(combined_output)
     
-    bert_model_scenario_name = "indolem_indobert-base-uncased_TransferLearning"
-    bert_model_save_path = f'Model/{bert_model_scenario_name}'
-    bert_model = tf.keras.models.load_model(bert_model_save_path, custom_objects={'BERTRegressor': BERTRegressor})
-    return bert_model, bert_tokenizer
+#     bert_model_scenario_name = "indolem_indobert-base-uncased_TransferLearning"
+#     bert_model_save_path = f'Model/{bert_model_scenario_name}'
+#     bert_model = tf.keras.models.load_model(bert_model_save_path, custom_objects={'BERTRegressor': BERTRegressor})
+#     return bert_model, bert_tokenizer
 
 def init_lstm():
     """Inisialisasi LSTM model dengan optimasi loading"""
@@ -75,7 +75,7 @@ def init_lstm():
         nltk.download('stopwords')
     
     stemmer = nltk.stem.PorterStemmer()
-    lstm_model_scenario_name = "LSTM_12"
+    lstm_model_scenario_name = "BiLSTM_13"
     lstm_model_save_path = f'Model/{lstm_model_scenario_name}'
     tokenizer_save_path = f'Model/{lstm_model_scenario_name}_tokenizer.pkl'
     lstm_max_len = 1024
@@ -90,7 +90,7 @@ def init_lstm():
     return lstm_model, lstm_tokenizer, stemmer, lstm_max_len
 
 # Inisialisasi model saat startup
-bert_model, bert_tokenizer = init_bert()
+# bert_model, bert_tokenizer = init_bert()
 lstm_model, lstm_tokenizer, stemmer, lstm_max_len = init_lstm()
 
 # Compile regex patterns sekali saja
@@ -143,27 +143,27 @@ def lstm_predict(text_tensor, numerical_tensor, model):
     """Optimized prediction dengan tf.function decorator"""
     return model([text_tensor, numerical_tensor], training=False)
 
-@tf.function
-def bert_predict(input_dict, model):
-    """Optimized BERT prediction dengan tf.function decorator"""
-    return model(input_dict, training=False)
+# @tf.function
+# def bert_predict(input_dict, model):
+#     """Optimized BERT prediction dengan tf.function decorator"""
+#     return model(input_dict, training=False)
 
-def bert_inference(inference_numerical_tensor, inference_text, tokenizer=bert_tokenizer, model=bert_model):
-    """Optimized BERT inference"""
-    inputs = tokenizer(inference_text, padding=True, truncation=True, return_tensors='tf', max_length=512)
+# def bert_inference(inference_numerical_tensor, inference_text, tokenizer=bert_tokenizer, model=bert_model):
+#     """Optimized BERT inference"""
+#     inputs = tokenizer(inference_text, padding=True, truncation=True, return_tensors='tf', max_length=512)
+    # 
+    # input_dict = {
+    #     'input_ids': inputs['input_ids'],
+    #     'attention_mask': inputs['attention_mask'],
+    #     'numerical_feature': inference_numerical_tensor
+    # }
     
-    input_dict = {
-        'input_ids': inputs['input_ids'],
-        'attention_mask': inputs['attention_mask'],
-        'numerical_feature': inference_numerical_tensor
-    }
-    
-    # Gunakan tf.function untuk prediksi
-    predictions = bert_predict(input_dict, model)
-    predictions_np = predictions.numpy()
-    pred_log = predictions_np[0].astype(float)
-    predictions = np.expm1(pred_log)
-    return float(predictions[0])
+    # # Gunakan tf.function untuk prediksi
+    # predictions = bert_predict(input_dict, model)
+    # predictions_np = predictions.numpy()
+    # pred_log = predictions_np[0].astype(float)
+    # predictions = np.expm1(pred_log)
+    # return float(predictions[0])
 
 def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model, max_len=lstm_max_len):
     """Optimized LSTM inference"""
@@ -227,11 +227,11 @@ def predict():
         text_data_lstm = lstm_text_preprocessing(text_data, stemmer)
         
         # Predictions
-        bert_prediction = bert_inference(inference_numerical_tensor, text_data)
+        # bert_prediction = bert_inference(inference_numerical_tensor, text_data)
         lstm_prediction = lstm_inference(inference_numerical_tensor, text_data_lstm)
         
         predictions = {
-            "bert_prediction": bert_prediction,
+            # "bert_prediction": bert_prediction,
             "lstm_prediction": lstm_prediction
         }
         
@@ -246,4 +246,4 @@ def predict():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded=True)
+    app.run(debug=False, threaded=True)

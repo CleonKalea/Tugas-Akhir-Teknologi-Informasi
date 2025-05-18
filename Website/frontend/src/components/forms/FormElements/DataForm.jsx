@@ -3,7 +3,15 @@ import { Box, TextField, Button, Autocomplete, CircularProgress } from '@mui/mat
 import PropTypes from 'prop-types';
 import FormHeader from './FormHeader';
 
-const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteChange, backendData, isLoading }) => {
+const DataForm = ({ 
+  formValues, 
+  formDisplayNames,
+  handleChange, 
+  handleSubmit, 
+  handleAutocompleteChange, 
+  backendData, 
+  isLoading 
+}) => {
  
   // Ekstrak data dari backend
   const klasifikasiOptions = backendData ? 
@@ -21,12 +29,15 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
       name, 
       id 
     })) : [];
+
+    console.log('Current formValues.klasifikasiPerkara:', formValues.klasifikasiPerkara);
   // Untuk pasal, kita perlu objek dengan nama pasal dan nilai maksimal hukuman
   const pasalOptions = backendData ? 
     Object.entries(backendData.pasal_mapping).map(([name, maxHukuman]) => ({ 
       name, 
       maxHukuman 
     })) : [];
+
   return (
     <Box
       sx={{
@@ -72,7 +83,10 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                 const valueToStore = newValue ? 
                   (typeof newValue === 'object' ? newValue.id : newValue) : 
                   '';
-                handleAutocompleteChange('klasifikasiPerkara', valueToStore);
+                const displayName = newValue ? 
+                  (typeof newValue === 'object' ? newValue.name : newValue) : 
+                  '';
+                handleAutocompleteChange('klasifikasiPerkara', valueToStore, displayName);
               }}
               renderInput={(params) => (
                 <TextField
@@ -92,8 +106,8 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   right: 8
                 }
               }}
+              disabled={isLoading}
             />
-
             {/* Penuntut Umum */}
             <Autocomplete
               fullWidth
@@ -117,7 +131,10 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                 const valueToStore = newValue ? 
                   (typeof newValue === 'object' ? newValue.id : newValue) : 
                   '';
-                handleAutocompleteChange('namaPenuntutUmum', valueToStore);
+                const displayName = newValue ? 
+                  (typeof newValue === 'object' ? newValue.name : newValue) : 
+                  '';
+                handleAutocompleteChange('namaPenuntutUmum', valueToStore, displayName);
               }}
               renderInput={(params) => (
                 <TextField
@@ -137,8 +154,8 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   right: 8
                 }
               }}
+              disabled={isLoading}
             />
-
             {/* Nama Terdakwa */}
             <TextField
               fullWidth
@@ -156,8 +173,8 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   backgroundColor: 'background.dropdown'
                 }
               }}
+              disabled={isLoading}
             />
-
             {/* Hakim */}
             <Autocomplete
               fullWidth
@@ -178,11 +195,13 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   option.name === formValues.namaHakim
                 ) || null : null}
               onChange={(event, newValue) => {
-
                 const valueToStore = newValue ? 
                   (typeof newValue === 'object' ? newValue.id : newValue) : 
                   '';
-                handleAutocompleteChange('namaHakim', valueToStore);
+                const displayName = newValue ? 
+                  (typeof newValue === 'object' ? newValue.name : newValue) : 
+                  '';
+                handleAutocompleteChange('namaHakim', valueToStore, displayName);
               }}
               renderInput={(params) => (
                 <TextField
@@ -202,9 +221,9 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   right: 8
                 }
               }}
+              disabled={isLoading}
             />
           </Box>
-
           <Box 
             sx={{ 
               display: 'grid', 
@@ -252,6 +271,7 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   MozAppearance: 'textfield' // Firefox
                 }
               }}
+              disabled={isLoading}
             />
             
             {/* Pasal - Wider */}
@@ -271,9 +291,9 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
               value={formValues.pasal ? 
                 pasalOptions.find(option => option.name === formValues.pasal) || null : null}
               onChange={(event, newValue) => {
-                // console.log("Pasal baru dipilih:", newValue);
                 // Menyimpan nama pasal sebagai nilainya
-                handleAutocompleteChange('pasal', newValue ? newValue.name : '');
+                const pasalName = newValue ? newValue.name : '';
+                handleAutocompleteChange('pasal', pasalName, pasalName);
                 
                 // Meneruskan nilai maksimal hukuman ke parent component
                 if (newValue && newValue.maxHukuman) {
@@ -299,9 +319,9 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                   right: 8
                 }
               }}
+              disabled={isLoading}
             />
           </Box>
-
           <TextField
             fullWidth
             label="Dakwaan"
@@ -316,6 +336,7 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
                 backgroundColor: 'background.dropdown'
               }
             }}
+            disabled={isLoading}
           />
           
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
@@ -323,9 +344,27 @@ const DataForm = ({ formValues, handleChange, handleSubmit, handleAutocompleteCh
               variant="contained" 
               color="primary" 
               onClick={handleSubmit}
-              sx={{ minWidth: 150 }}
+              sx={{ 
+                minWidth: 150,
+                position: 'relative'
+              }}
+              disabled={isLoading}
             >
-              PREDIKSI
+              {isLoading ? (
+                <>
+                  <CircularProgress 
+                    size={24} 
+                    sx={{ 
+                      color: 'white',
+                      position: 'absolute', 
+                      left: 'calc(50% - 12px)' 
+                    }} 
+                  />
+                  <span style={{ visibility: 'hidden' }}>PREDIKSI</span>
+                </>
+              ) : (
+                'PREDIKSI'
+              )}
             </Button>
           </Box>
         </Box>
@@ -348,6 +387,15 @@ DataForm.propTypes = {
       PropTypes.string,
       PropTypes.number
     ]),
+    namaTerdakwa: PropTypes.string,
+    jumlahSaksi: PropTypes.string,
+    pasal: PropTypes.string,
+    dakwaan: PropTypes.string
+  }).isRequired,
+  formDisplayNames: PropTypes.shape({
+    klasifikasiPerkara: PropTypes.string,
+    namaHakim: PropTypes.string,
+    namaPenuntutUmum: PropTypes.string,
     namaTerdakwa: PropTypes.string,
     jumlahSaksi: PropTypes.string,
     pasal: PropTypes.string,

@@ -11,8 +11,8 @@ import ValidationAlert from '../ui/ValidationAlert';
 const SentencePredictionForm = () => {
   // State untuk tab aktif
   const [activeTab, setActiveTab] = useState(0);
-
-  // State untuk menyimpan nilai input
+  
+  // State untuk menyimpan nilai input (ID/values untuk backend)
   const [formValues, setFormValues] = useState({
     klasifikasiPerkara: '',
     namaHakim: '',
@@ -22,13 +22,24 @@ const SentencePredictionForm = () => {
     pasal: '',
     dakwaan: ''
   });
-
+  
+  // State untuk menyimpan display names
+  const [formDisplayNames, setFormDisplayNames] = useState({
+    klasifikasiPerkara: '',
+    namaHakim: '',
+    namaPenuntutUmum: '',
+    namaTerdakwa: '',
+    jumlahSaksi: '',
+    pasal: '',
+    dakwaan: ''
+  });
+  
   // State untuk validation alert
   const [validationAlert, setValidationAlert] = useState({
     open: false,
     message: ''
   });
-
+  
   // State untuk hasil prediksi
   const [prediction, setPrediction] = useState(null);
   
@@ -50,7 +61,6 @@ const SentencePredictionForm = () => {
           throw new Error(`HTTP error! Status: ${response.status}`);
         }
         const data = await response.json();
-        // console.log("Data dari server:", data);
         setBackendData(data);
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -63,37 +73,52 @@ const SentencePredictionForm = () => {
     
     fetchData();
   }, []);
-
+  
   // Handle perubahan input
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Update formValues
     setFormValues({
       ...formValues,
       [name]: value
     });
-  };
-
-  // Handle perubahan Autocomplete
-  const handleAutocompleteChange = (name, value) => {
-    // console.log(`handleAutocompleteChange: ${name} = `, value);
     
+    // Update formDisplayNames for text fields
+    setFormDisplayNames({
+      ...formDisplayNames,
+      [name]: value
+    });
+  };
+  
+  // Handle perubahan Autocomplete
+  const handleAutocompleteChange = (name, value, displayName) => {
     // Penanganan khusus untuk maxHukuman (bukan field form)
     if (name === 'maxHukuman') {
       setMaxHukuman(value);
       return;
     }
     
+    // Update formValues (ID atau value asli)
     setFormValues({
       ...formValues,
       [name]: value || ''
     });
+    
+    // Update formDisplayNames jika displayName disediakan
+    if (displayName !== undefined) {
+      setFormDisplayNames({
+        ...formDisplayNames,
+        [name]: displayName
+      });
+    }
   };
-
+  
   // Handle perubahan tab
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
   };
-
+  
   // Close alert
   const handleCloseAlert = () => {
     setValidationAlert({
@@ -101,7 +126,7 @@ const SentencePredictionForm = () => {
       open: false
     });
   };
-
+  
   // Validasi form
   const validateForm = () => {
     // Check required fields
@@ -130,7 +155,7 @@ const SentencePredictionForm = () => {
     
     return true;
   };
-
+  
   // Handle submit form with validation
   const handleSubmit = async () => {
     // Validate form fields
@@ -157,14 +182,10 @@ const SentencePredictionForm = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(predictionData),
       });
-
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-
       const result = await response.json();
-    //   console.log("Data prediksi dari API:", result);
-      // Set nilai prediksi langsung dari respons API
       setPrediction(result);
       setActiveTab(1); // Pindah ke tab hasil
     } catch (error) {
@@ -177,12 +198,11 @@ const SentencePredictionForm = () => {
       setIsLoading(false);
     }
   };
-
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Header logoImage={logoImage} />
-
       <Container 
         maxWidth="lg" 
         sx={{ 
@@ -193,7 +213,6 @@ const SentencePredictionForm = () => {
         }}
       >
         <TitleSection />
-
         {backendData === null ? (
           <Box sx={{ 
             display: 'flex', 
@@ -279,7 +298,7 @@ const SentencePredictionForm = () => {
               />
               <Tab 
                 label="Hasil Prediksi" 
-                disabled={true}
+                disabled={prediction === null}
                 icon={
                   <Box 
                     component="span"
@@ -298,11 +317,11 @@ const SentencePredictionForm = () => {
                 iconPosition="start"
               />
             </Tabs>
-
             <Box sx={{ p: 0 }}>
               {activeTab === 0 && (
                 <DataForm 
                   formValues={formValues}
+                  formDisplayNames={formDisplayNames}
                   handleChange={handleChange}
                   handleSubmit={handleSubmit}
                   handleAutocompleteChange={handleAutocompleteChange}
@@ -310,10 +329,11 @@ const SentencePredictionForm = () => {
                   isLoading={isLoading}
                 />
               )}
-
-          {activeTab === 1 && prediction && (
+              {activeTab === 1 && prediction && (
                 <ResultDisplay 
                   prediction={prediction} 
+                  formValues={formValues}
+                  formDisplayNames={formDisplayNames}
                   onBack={() => setActiveTab(0)} 
                 />
               )}

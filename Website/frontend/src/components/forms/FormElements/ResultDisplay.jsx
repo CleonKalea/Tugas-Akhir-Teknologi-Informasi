@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import PropTypes from 'prop-types';
 
-const ResultDisplay = ({ prediction, onBack }) => {
+const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => {
   // Fungsi untuk mengkonversi prediction ke format yang sesuai
   const formatPrediction = (value) => {
     // Jika prediction berupa object dengan property prediction
@@ -21,15 +21,32 @@ const ResultDisplay = ({ prediction, onBack }) => {
     
     // Perhitungan tahun dan bulan
     const tahun = Math.floor(numValue / 12);
-    const bulan = Math.floor(numValue - tahun * 12)
-    const hari = Math.round((numValue - Math.floor(numValue)) * 30)
+    const bulan = Math.floor(numValue - (tahun * 12));
+    const hari = Math.round((numValue - Math.floor(numValue)) * 30);
     
-    // Handle kasus khusus jika bulan = 12 setelah pembulatan
-    if (bulan === 12) {
-      return `${tahun + 1} Tahun 0 Bulan`;
+    // Membuat array komponen waktu
+    const components = [];
+    
+    // Hanya tambahkan komponen jika nilainya lebih dari 0
+    if (tahun > 0) {
+      components.push(`${tahun} Tahun`);
     }
     
-    return `${tahun} Tahun ${bulan} Bulan ${hari} Hari`;
+    if (bulan > 0) {
+      components.push(`${bulan} Bulan`);
+    }
+    
+    if (hari > 0) {
+      components.push(`${hari} Hari`);
+    }
+    
+    // Jika tidak ada komponen waktu (semua 0), kembalikan 0 Hari
+    if (components.length === 0) {
+      return "0 Hari";
+    }
+    
+    // Gabungkan komponen waktu dengan spasi
+    return components.join(" ");
   };
 
   return (
@@ -67,10 +84,19 @@ const ResultDisplay = ({ prediction, onBack }) => {
       </Box>
       
       <Box sx={{ mt: 4 }}>
+        <Typography variant="body2" color="text.secondary" sx={{mb: 2}}>
+          Prediksi ini menyangkut Terdakwa {formDisplayNames.namaTerdakwa} dalam 
+          perkara {formDisplayNames.klasifikasiPerkara}. Tuntutan diajukan oleh 
+          Penuntut Umum {formDisplayNames.namaPenuntutUmum}, dengan 
+          dasar {formDisplayNames.pasal} dan menghadirkan {formDisplayNames.jumlahSaksi} orang saksi, 
+          serta diperiksa dan diadili oleh {formDisplayNames.namaHakim} selaku Ketua Majelis Hakim.
+        </Typography>
+        
         <Typography variant="body2" color="text.secondary">
-          Hasil prediksi ini didasarkan pada analisis dari berbagai kasus serupa
-          dengan tingkat akurasi --------%. Hasil aktual dapat berbeda tergantung
-          berbagai faktor yang dipertimbangkan oleh hakim.
+          Hasil prediksi ini diperoleh menggunakan model Bidirectional-LSTM yang telah dilatih dengan data perkara asli sebelumnya. 
+          Model mencapai Mean Absolute Error (MAE) sebesar 5,49 bulan, yang berarti rata-rata selisih antara hasil 
+          prediksi dan putusan aktual berada di kisaran ±5,5 bulan. Perlu diingat bahwa putusan akhir tetap dapat 
+          berbeda, karena dipengaruhi oleh pertimbangan Ketua Majelis Hakim serta berbagai faktor yuridis dan non-yuridis yang relevan.
         </Typography>
         <Box sx={{ mt: 4 }}>
           <Button 
