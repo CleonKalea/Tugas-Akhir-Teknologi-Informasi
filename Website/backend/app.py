@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 # Cache untuk mapping files
 @lru_cache(maxsize=None)
 def load_mapping_files():
-    """Load mapping files dengan caching untuk menghindari pembacaan berulang"""
     try:
         with open('Mapping/klasifikasi_perkara_mapping.pkl', 'rb') as f:
             klasifikasi_perkara_mapping = pickle.load(f)
@@ -67,8 +66,6 @@ def load_mapping_files():
 #     return bert_model, bert_tokenizer
 
 def init_lstm():
-    """Inisialisasi LSTM model dengan optimasi loading"""
-    # Download stopwords hanya saat pertama kali
     try:
         nltk.data.find('corpora/stopwords')
     except LookupError:
@@ -166,7 +163,6 @@ def lstm_predict(text_tensor, numerical_tensor, model):
     # return float(predictions[0])
 
 def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model, max_len=lstm_max_len):
-    """Optimized LSTM inference"""
     new_sequences = tokenizer.texts_to_sequences([inference_text])
     inference_text_padded = tf.keras.preprocessing.sequence.pad_sequences(
         new_sequences, maxlen=max_len, padding='post', truncating='post'
@@ -182,7 +178,6 @@ def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_to
 
 @app.route('/data')
 def data():
-    """Endpoint untuk mendapatkan data mapping dengan caching"""
     try:
         response_data = load_mapping_files()
         return jsonify(response_data)
@@ -192,7 +187,6 @@ def data():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """Endpoint prediksi dengan optimasi performa"""
     try:
         data = request.json
         print(data)
