@@ -43,6 +43,9 @@ const SentencePredictionForm = () => {
   // State untuk hasil prediksi
   const [prediction, setPrediction] = useState(null);
   
+  // State untuk Confidence Interval
+  const [CI, setCI] = useState(null);
+  
   // State untuk data dari API
   const [backendData, setBackendData] = useState(null);
   
@@ -186,7 +189,8 @@ const SentencePredictionForm = () => {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
       const result = await response.json();
-      setPrediction(result);
+      setPrediction(result[0]);
+      setCI(result[1]);
       setActiveTab(1); // Pindah ke tab hasil
     } catch (error) {
       console.error('Prediction error:', error);
@@ -331,7 +335,8 @@ const SentencePredictionForm = () => {
               )}
               {activeTab === 1 && prediction && (
                 <ResultDisplay 
-                  prediction={prediction} 
+                  prediction={prediction}
+                  CI={CI} 
                   formValues={formValues}
                   formDisplayNames={formDisplayNames}
                   onBack={() => setActiveTab(0)} 

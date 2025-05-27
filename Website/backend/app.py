@@ -9,11 +9,11 @@ import nltk
 import logging
 from functools import lru_cache
 import traceback
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 
 app = Flask(__name__)
 CORS(app)
 
-# Konfigurasi logging untuk error tracking yang lebih baik
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -36,145 +36,97 @@ def load_mapping_files():
             "penuntut_umum_mapping": penuntut_umum_mapping,
             "pasal_mapping": pasal_mapping
         }
+    
     except Exception as e:
         logger.error(f"Error loading mapping files: {str(e)}")
         raise
 
-# def init_bert():
-#     bert_tokenizer = AutoTokenizer.from_pretrained("indolem/indobert-base-uncased")
+class MCDropout(tf.keras.layers.Dropout):
+    def call(self, inputs, training=None):
+        return super().call(inputs, training=True)
     
-#     class BERTRegressor(tf.keras.Model):
-#         def __init__(self):
-#             super(BERTRegressor, self).__init__()
-#             self.bert = TFBertModel.from_pretrained("indolem/indobert-base-uncased", from_pt=True)
-#             for layer in self.bert.layers:
-#                 layer.trainable = False
-#             self.regressor = tf.keras.layers.Dense(1)
-        
-#         def call(self, inputs):
-#             input_ids = inputs['input_ids']
-#             attention_mask = inputs['attention_mask']
-#             numerical_features = inputs['numerical_feature']
-#             bert_output = self.bert(input_ids=input_ids, attention_mask=attention_mask)
-#             pooled_output = bert_output.pooler_output
-#             combined_output = tf.concat([pooled_output, numerical_features], axis=1)
-#             return self.regressor(combined_output)
-    
-#     bert_model_scenario_name = "indolem_indobert-base-uncased_TransferLearning"
-#     bert_model_save_path = f'Model/{bert_model_scenario_name}'
-#     bert_model = tf.keras.models.load_model(bert_model_save_path, custom_objects={'BERTRegressor': BERTRegressor})
-#     return bert_model, bert_tokenizer
+def apply_mc_dropout(model):
+    def convert_layer(layer):
+        if isinstance(layer, tf.keras.layers.Dropout):
+            config = layer.get_config()
+            return MCDropout.from_config(config)
+        return layer
+
+    new_model = tf.keras.models.clone_model(model, clone_function=convert_layer)
+    new_model.set_weights(model.get_weights())
+    return new_model
 
 def init_lstm():
-    try:
-        nltk.data.find('corpora/stopwords')
-    except LookupError:
-        nltk.download('stopwords')
-    
-    stemmer = nltk.stem.PorterStemmer()
-    lstm_model_scenario_name = "BiLSTM_13"
+    stopword_factory = StopWordRemoverFactory()
+    stop_words = set(stopword_factory.get_stop_words())
+
+    lstm_model_scenario_name = "BiLSTM_12"
     lstm_model_save_path = f'Model/{lstm_model_scenario_name}'
     tokenizer_save_path = f'Model/{lstm_model_scenario_name}_tokenizer.pkl'
     lstm_max_len = 1024
     
-    # Load model dengan optimasi
-    lstm_model = tf.keras.models.load_model(lstm_model_save_path, compile=False)
-    lstm_model.compile(optimizer='adam', loss='mse')  # Compile manual untuk performa lebih baik
+    # Load model
+    lstm_model = tf.keras.models.load_model(lstm_model_save_path)
     
     with open(tokenizer_save_path, 'rb') as handle:
         lstm_tokenizer = pickle.load(handle)
     
-    return lstm_model, lstm_tokenizer, stemmer, lstm_max_len
+    return lstm_model, lstm_tokenizer, lstm_max_len, stop_words
 
 # Inisialisasi model saat startup
-# bert_model, bert_tokenizer = init_bert()
-lstm_model, lstm_tokenizer, stemmer, lstm_max_len = init_lstm()
+lstm_model, lstm_tokenizer, lstm_max_len, stop_words = init_lstm()
+mc_model = apply_mc_dropout(lstm_model)
 
-# Compile regex patterns sekali saja
-CLEAN_TEXT_PATTERNS = {
-    'alphanumeric': re.compile(r'[^a-zA-Z0-9., /\\()\"\'\n-]+'),
-    'dashes': re.compile(r'-{2,}'),
-    'spaces': re.compile(r' +'),
-    'newlines': re.compile(r'\n'),
-    'dots_space': re.compile(r' \.'),
-    'whitespace': re.compile(r'\s+'),
-    'dots': re.compile(r'\.{2,}')
-}
-
-LSTM_TEXT_PATTERNS = {
-    'non_alpha': re.compile(r'[^a-z\s]'),
-    'whitespace': re.compile(r'\s+')
-}
-
-# Cache untuk stopwords
-STOP_WORDS = set(nltk.corpus.stopwords.words('indonesian'))
 
 def clean_text(text):
-    """Optimized text cleaning dengan compiled regex patterns"""
-    cleaned_text = CLEAN_TEXT_PATTERNS['alphanumeric'].sub('', text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['dashes'].sub('-', cleaned_text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['spaces'].sub(' ', cleaned_text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['newlines'].sub('. ', cleaned_text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['dots_space'].sub('. ', cleaned_text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['whitespace'].sub(' ', cleaned_text)
-    cleaned_text = CLEAN_TEXT_PATTERNS['dots'].sub('.', cleaned_text)
+    text = re.sub(r'[^A-Za-z0-9\s\(\)]', '', text)
+    cleaned_text = re.sub(r'\s+', ' ', text).strip()
+
     return cleaned_text
 
-def lstm_text_preprocessing(text, stemmer):
-    """Optimized LSTM text preprocessing"""
+def lstm_text_preprocessing(text, stop_words):
     # Normalisasi Teks
     text = text.lower()
-    text = LSTM_TEXT_PATTERNS['non_alpha'].sub('', text)
-    text = LSTM_TEXT_PATTERNS['whitespace'].sub(' ', text).strip()
-    
-    # Stopword Removal - menggunakan list comprehension untuk performa lebih baik
+
+    # Stopword Removal
     words = text.split()
-    text = ' '.join([word for word in words if word not in STOP_WORDS])
-    
-    # Stemming - menggunakan list comprehension
-    text = ' '.join([stemmer.stem(word) for word in text.split()])
+    text = ' '.join([word for word in words if word not in stop_words])
+
     return text
 
 @tf.function
 def lstm_predict(text_tensor, numerical_tensor, model):
-    """Optimized prediction dengan tf.function decorator"""
     return model([text_tensor, numerical_tensor], training=False)
 
-# @tf.function
-# def bert_predict(input_dict, model):
-#     """Optimized BERT prediction dengan tf.function decorator"""
-#     return model(input_dict, training=False)
-
-# def bert_inference(inference_numerical_tensor, inference_text, tokenizer=bert_tokenizer, model=bert_model):
-#     """Optimized BERT inference"""
-#     inputs = tokenizer(inference_text, padding=True, truncation=True, return_tensors='tf', max_length=512)
-    # 
-    # input_dict = {
-    #     'input_ids': inputs['input_ids'],
-    #     'attention_mask': inputs['attention_mask'],
-    #     'numerical_feature': inference_numerical_tensor
-    # }
+def mc_dropout_prediction(model, x_input, n_iter=100, z=3.470):
+    preds = [model(x_input, training=False).numpy() for _ in range(n_iter)]
+    preds = np.array(preds)
     
-    # # Gunakan tf.function untuk prediksi
-    # predictions = bert_predict(input_dict, model)
-    # predictions_np = predictions.numpy()
-    # pred_log = predictions_np[0].astype(float)
-    # predictions = np.expm1(pred_log)
-    # return float(predictions[0])
+    mean = np.mean(preds, axis=0).squeeze()
+    std = np.std(preds, axis=0).squeeze()
+    
+    ci_lower = mean - z * std
+    ci_upper = mean + z * std
+    return (ci_lower, ci_upper)
 
-def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model, max_len=lstm_max_len):
+def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_tokenizer, model=lstm_model, max_len=lstm_max_len, mc_model=mc_model):
     new_sequences = tokenizer.texts_to_sequences([inference_text])
     inference_text_padded = tf.keras.preprocessing.sequence.pad_sequences(
         new_sequences, maxlen=max_len, padding='post', truncating='post'
     )
     
-    # Convert ke tensor untuk performa lebih baik
-    text_tensor = tf.constant(inference_text_padded, dtype=tf.int32)
+    print(f'Predicting Result...')
+    predictions = lstm_predict(inference_text_padded, inference_numerical_tensor, model)
     
-    # Gunakan tf.function untuk prediksi
-    predictions = lstm_predict(text_tensor, inference_numerical_tensor, model)
+    # x_text = np.expand_dims(inference_text_padded, axis=0)
+    # x_numerical = np.expand_dims(inference_numerical_tensor, axis=0)
+    x = [inference_text_padded, inference_numerical_tensor]
+    print(f'Predicting Confidence Interval...')
+    ci = mc_dropout_prediction(mc_model, x)
+    print(f'Bi-LSTM Prediction : {predictions[0][0]}')
+    print(f'Confidence Interval (80%) : {ci}')
     
-    return float(predictions[0][0])
+    return float(predictions[0][0]), ci
 
 @app.route('/data')
 def data():
@@ -191,7 +143,6 @@ def predict():
         data = request.json
         print(data)
         
-        # Parse input dengan error handling
         try:
             klasifikasi_perkara_encoded = int(data.get('klasifikasiPerkara'))
             penuntut_umum_encoded = int(data.get('penuntutUmum'))
@@ -218,20 +169,13 @@ def predict():
         # Text preprocessing
         text_data = f"{terdakwa}. {dakwaan}"
         text_data = clean_text(text_data)
-        text_data_lstm = lstm_text_preprocessing(text_data, stemmer)
+        text_data_lstm = lstm_text_preprocessing(text_data, stop_words)
         
         # Predictions
-        # bert_prediction = bert_inference(inference_numerical_tensor, text_data)
-        lstm_prediction = lstm_inference(inference_numerical_tensor, text_data_lstm)
-        
-        predictions = {
-            # "bert_prediction": bert_prediction,
-            "lstm_prediction": lstm_prediction
-        }
-        
-        print(predictions)
-        
-        return jsonify(lstm_prediction)
+        lstm_prediction, ci = lstm_inference(inference_numerical_tensor, text_data_lstm)
+        # print(predictions)
+
+        return jsonify(lstm_prediction, ci)
     
     except Exception as e:
         print(e)

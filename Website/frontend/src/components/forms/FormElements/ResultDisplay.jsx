@@ -2,8 +2,9 @@ import React from 'react';
 import { Box, Typography, Button } from '@mui/material';
 import PropTypes from 'prop-types';
 
-const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => {
+const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack }) => {
   // Fungsi untuk mengkonversi prediction ke format yang sesuai
+  // console.log(CI)
   const formatPrediction = (value) => {
     // Jika prediction berupa object dengan property prediction
     if (typeof value === 'object' && value !== null && 'prediction' in value) {
@@ -64,23 +65,58 @@ const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => 
       
       <Box 
         sx={{ 
-          p: 3, 
-          backgroundColor: 'rgba(249, 177, 122, 0.15)', 
-          borderRadius: 2,
-          display: 'inline-block',
-          minWidth: 250,
-          position: 'relative',
-          border: '1px solid rgba(249, 177, 122, 0.3)',
-          margin: '0 auto',
-          boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)'
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center', 
+          gap: 3 // spacing between boxes
         }}
       >
-        <Typography variant="body1" component="div" color="text.secondary" gutterBottom>
-          Estimasi Lama Hukuman Penjara
-        </Typography>
-        <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', color: '#f9b17a' }}>
-          {formatPrediction(prediction)}
-        </Typography>
+        {/* Main Prediction Box */}
+        <Box 
+          sx={{ 
+            p: 3, 
+            backgroundColor: 'rgba(249, 177, 122, 0.15)', 
+            borderRadius: 2,
+            minWidth: 250,
+            border: '1px solid rgba(249, 177, 122, 0.3)',
+            boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)'
+          }}
+        >
+          <Typography variant="body1" color="text.secondary" gutterBottom>
+            Estimasi Lama Hukuman Penjara
+          </Typography>
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f9b17a' }}>
+            {formatPrediction(prediction)}
+          </Typography>
+        </Box>
+
+        {/* Confidence Score Boxes */}
+        <Box 
+          sx={{ 
+            display: 'flex', 
+            gap: 2, 
+            justifyContent: 'center' 
+          }}
+        >
+          <Box 
+            sx={{ 
+              p: 3, 
+              backgroundColor: 'rgba(249, 177, 122, 0.15)', 
+              borderRadius: 2,
+              minWidth: 250,
+              border: '1px solid rgba(249, 177, 122, 0.3)',
+              boxShadow: '0 10px 20px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            <Typography variant="body1" color="text.secondary" gutterBottom>
+              Estimasi Lama Hukuman Penjara dengan Confidence Interval (80%)
+            </Typography>
+            <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#f9b17a' }}>
+              {formatPrediction(CI[0])} - {formatPrediction(CI[1])}
+            </Typography>
+          </Box>
+
+        </Box>
       </Box>
       
       <Box sx={{ mt: 4 }}>
@@ -88,15 +124,14 @@ const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => 
           Prediksi ini menyangkut Terdakwa {formDisplayNames.namaTerdakwa} dalam 
           tindak pidana perkara {formDisplayNames.klasifikasiPerkara}. Tuntutan diajukan oleh 
           Penuntut Umum {formDisplayNames.namaPenuntutUmum}, dengan 
-          dasar {formDisplayNames.pasal} dan menghadirkan {formDisplayNames.jumlahSaksi} orang saksi, 
+          dasar {formDisplayNames.pasal}. Perkara ini menghadirkan {formDisplayNames.jumlahSaksi} orang saksi, 
           serta diperiksa dan diadili oleh {formDisplayNames.namaHakim} selaku Ketua Majelis Hakim.
         </Typography>
         
         <Typography variant="body2" color="text.secondary">
-          Hasil prediksi ini diperoleh menggunakan model Bidirectional-LSTM yang telah dilatih dengan data perkara asli sebelumnya. 
-          Model mencapai Mean Absolute Error (MAE) sebesar 5,49 bulan, yang berarti rata-rata selisih antara hasil 
-          prediksi dan putusan aktual berada di kisaran ±5,5 bulan. Perlu diingat bahwa putusan akhir tetap dapat 
-          berbeda, karena dipengaruhi oleh pertimbangan Majelis Hakim serta berbagai faktor yuridis dan non-yuridis yang relevan.
+          Hasil prediksi ini diperoleh menggunakan model Bidirectional-LSTM yang telah dilatih dengan data perkara asli. 
+          Perlu diingat bahwa putusan akhir tetap dapat berbeda, karena dipengaruhi oleh pertimbangan Majelis Hakim serta 
+          berbagai faktor yuridis dan non-yuridis yang relevan.
         </Typography>
         <Box sx={{ mt: 4 }}>
           <Button 
@@ -124,9 +159,9 @@ const ResultDisplay = ({ prediction, formValues, formDisplayNames, onBack }) => 
 ResultDisplay.propTypes = {
   prediction: PropTypes.oneOfType([
     PropTypes.number,
-    PropTypes.object,
     PropTypes.string
   ]).isRequired,
+  CI: PropTypes.arrayOf(PropTypes.number).isRequired,
   onBack: PropTypes.func.isRequired
 };
 
