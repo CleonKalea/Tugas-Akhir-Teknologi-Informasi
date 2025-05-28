@@ -143,11 +143,10 @@ const SentencePredictionForm = () => {
       { name: 'dakwaan', label: 'Dakwaan' }
     ];
     
-    // Check for empty fields
+  
     const emptyFields = requiredFields.filter(field => !formValues[field.name]);
     
     if (emptyFields.length > 0) {
-      // Get the names of empty fields
       const emptyFieldNames = emptyFields.map(field => field.label).join(', ');
       setValidationAlert({
         open: true,
@@ -159,7 +158,7 @@ const SentencePredictionForm = () => {
     return true;
   };
   
-  // Handle submit form with validation
+  // Handle submit form dengan validation
   const handleSubmit = async () => {
     // Validate form fields
     if (!validateForm()) {
@@ -170,9 +169,9 @@ const SentencePredictionForm = () => {
     
     // Format data untuk backend
     const predictionData = {
-      klasifikasiPerkara: formValues.klasifikasiPerkara.id, // ID sudah tersimpan langsung
-      penuntutUmum: formValues.namaPenuntutUmum.id, // ID sudah tersimpan langsung
-      hakim: formValues.namaHakim.id, // ID sudah tersimpan langsung
+      klasifikasiPerkara: formValues.klasifikasiPerkara.id,
+      penuntutUmum: formValues.namaPenuntutUmum.id,
+      hakim: formValues.namaHakim.id,
       jumlahSaksi: formValues.jumlahSaksi,
       terdakwa: formValues.namaTerdakwa,
       pasal: maxHukuman, // Nilai maksimal hukuman untuk pasal yang dipilih

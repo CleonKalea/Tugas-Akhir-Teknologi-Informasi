@@ -118,8 +118,6 @@ def lstm_inference(inference_numerical_tensor, inference_text, tokenizer=lstm_to
     print(f'Predicting Result...')
     predictions = lstm_predict(inference_text_padded, inference_numerical_tensor, model)
     
-    # x_text = np.expand_dims(inference_text_padded, axis=0)
-    # x_numerical = np.expand_dims(inference_numerical_tensor, axis=0)
     x = [inference_text_padded, inference_numerical_tensor]
     print(f'Predicting Confidence Interval...')
     ci = mc_dropout_prediction(mc_model, x)
@@ -160,20 +158,16 @@ def predict():
         
         print(klasifikasi_perkara_encoded, penuntut_umum_encoded, hakim_encoded, jumlah_saksi, maks_penjara_berdasarkan_pasal, flush=True)
         
-        # Buat numerical tensor
         inference_numerical_tensor = tf.constant(
             [[klasifikasi_perkara_encoded, penuntut_umum_encoded, hakim_encoded, jumlah_saksi, maks_penjara_berdasarkan_pasal]], 
             dtype=tf.float32
         )
         
-        # Text preprocessing
         text_data = f"{terdakwa}. {dakwaan}"
         text_data = clean_text(text_data)
         text_data_lstm = lstm_text_preprocessing(text_data, stop_words)
         
-        # Predictions
         lstm_prediction, ci = lstm_inference(inference_numerical_tensor, text_data_lstm)
-        # print(predictions)
 
         return jsonify(lstm_prediction, ci)
     

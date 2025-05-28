@@ -3,18 +3,13 @@ import { Box, Typography, Button } from '@mui/material';
 import PropTypes from 'prop-types';
 
 const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack }) => {
-  // Fungsi untuk mengkonversi prediction ke format yang sesuai
-  // console.log(CI)
   const formatPrediction = (value) => {
-    // Jika prediction berupa object dengan property prediction
     if (typeof value === 'object' && value !== null && 'prediction' in value) {
       value = value.prediction;
     }
     
-    // Konversi ke number untuk memastikan
     const numValue = Number(value);
     
-    // Jika masih bukan number yang valid, tampilkan pesan error
     if (isNaN(numValue)) {
       console.error("Prediction bukan angka valid:", value);
       return "Data tidak valid";
@@ -25,10 +20,8 @@ const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack })
     const bulan = Math.floor(numValue - (tahun * 12));
     const hari = Math.round((numValue - Math.floor(numValue)) * 30);
     
-    // Membuat array komponen waktu
     const components = [];
     
-    // Hanya tambahkan komponen jika nilainya lebih dari 0
     if (tahun > 0) {
       components.push(`${tahun} Tahun`);
     }
@@ -41,12 +34,10 @@ const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack })
       components.push(`${hari} Hari`);
     }
     
-    // Jika tidak ada komponen waktu (semua 0), kembalikan 0 Hari
     if (components.length === 0) {
       return "0 Hari";
     }
     
-    // Gabungkan komponen waktu dengan spasi
     return components.join(" ");
   };
 
@@ -68,10 +59,9 @@ const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack })
           display: 'flex', 
           flexDirection: 'column', 
           alignItems: 'center', 
-          gap: 3 // spacing between boxes
+          gap: 3
         }}
       >
-        {/* Main Prediction Box */}
         <Box 
           sx={{ 
             p: 3, 
@@ -90,7 +80,6 @@ const ResultDisplay = ({ prediction, CI, formValues, formDisplayNames, onBack })
           </Typography>
         </Box>
 
-        {/* Confidence Score Boxes */}
         <Box 
           sx={{ 
             display: 'flex', 
