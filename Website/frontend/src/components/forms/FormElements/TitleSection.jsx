@@ -49,7 +49,7 @@ const TitleSection = () => {
           opacity: 0.85
         }}
       >
-        Menggunakan Metode Natural Language Processing dan Deep Learning.
+        Menggunakan Metode Deep Learning Berbasis Natural Language Processing.
       </Typography>
     </Box>
   );
